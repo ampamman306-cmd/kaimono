@@ -1,0 +1,4715 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F2F5F4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>買い時ノート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F5F4; --card:#FFFFFF; --ink:#18222F; --muted:#6B7785; --line:#DDE3E1;
+  --red:#D7261E; --pop:#FFD43B; --wait:#3B5BDB; --ok:#1F8A5B;
+  --life:#F08C00; --pal:#0C8599; --lopia:#C2255C; --other:#868E96;
+  --r:14px; --shadow:0 1px 0 rgba(24,34,47,.06),0 6px 18px -10px rgba(24,34,47,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"Zen Kaku Gothic New",system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--wait);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+.dela{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-weight:400;letter-spacing:.01em}
+
+header{position:sticky;top:0;z-index:20;background:rgba(242,245,244,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{margin:0;font-size:22px}
+.brand h1 span{color:var(--red)}
+.meta{font-size:12px;color:var(--muted)}
+main{max-width:760px;margin:0 auto;padding:12px 14px 110px}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{background:none;border:0;padding:10px 4px 12px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);font-weight:700}
+nav.tabs button[aria-selected="true"] svg{color:var(--red)}
+section[hidden]{display:none}
+
+/* day strip */
+.days{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0 12px}
+.day{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;line-height:1.2}
+.day b{display:block;font-size:20px}
+.day small{font-size:11px;color:var(--muted)}
+.day .cnt{display:block;font-size:11px;margin-top:3px;color:var(--muted)}
+.day[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.day[aria-pressed="true"] small,.day[aria-pressed="true"] .cnt{color:#C9D2DC}
+.day.sat b{color:var(--wait)} .day.sun b{color:var(--red)}
+.day[aria-pressed="true"].sat b,.day[aria-pressed="true"].sun b{color:#fff}
+
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.search{flex:1;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px}
+.toggle{display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;cursor:pointer}
+.toggle input{accent-color:var(--red)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;scrollbar-width:none}
+.chip{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:4px 12px;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.grouphead{font-size:12px;color:var(--muted);margin:16px 2px 6px;display:flex;justify-content:space-between}
+
+/* deal card */
+.deal{position:relative;display:grid;grid-template-columns:1fr auto;gap:2px 12px;background:var(--card);border-radius:var(--r);padding:12px 14px 11px 16px;margin-bottom:8px;box-shadow:var(--shadow);overflow:hidden}
+.deal::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sc,var(--other))}
+.deal.fav{outline:2px solid var(--pop);outline-offset:-2px}
+.deal .name{font-weight:700;font-size:15px;line-height:1.35}
+.deal .sub{grid-column:1;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px}
+.price{grid-row:1/3;grid-column:2;text-align:right;align-self:center}
+.price .yen{font-size:24px;color:var(--red);line-height:1}
+.price .yen i{font-style:normal;font-size:13px;margin-left:1px}
+.price .unit{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.badges{grid-column:1/3;display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.b{font-size:12px;border-radius:6px;padding:2px 8px;font-weight:500}
+.b.wait{background:#E7ECFD;color:var(--wait)}
+.b.last{background:#FDE8E7;color:var(--red)}
+.b.best{background:var(--pop);color:var(--ink)}
+.b.cond{background:#F1F3F5;color:#495057}
+.b.disc{background:#E6F4EC;color:var(--ok)}
+.actions{grid-column:1/3;display:flex;gap:8px;margin-top:8px}
+.act{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer}
+.act[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.act.star[aria-pressed="true"]{background:var(--pop);border-color:#E9B800;color:var(--ink)}
+.empty{background:var(--card);border-radius:var(--r);padding:28px 18px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+
+/* calendar — signature */
+.cal{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.cal table{width:100%;border-collapse:collapse;table-layout:fixed}
+.cal th,.cal td{border-bottom:1px solid var(--line);padding:8px 4px;text-align:center;vertical-align:middle}
+.cal thead th{font-size:12px;color:var(--muted);font-weight:500;background:#FAFBFB}
+.cal thead th b{display:block;font-size:16px;color:var(--ink)}
+.cal th.item{width:28%;text-align:left;padding-left:12px;font-size:14px;color:var(--ink)}
+.cal th.item small{display:block;color:var(--muted);font-weight:400;font-size:11px}
+.cal td{position:relative;cursor:pointer;height:72px;padding-top:20px}
+.cal td .p{font-size:16px;color:var(--ink)}
+.cal td .s{display:block;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal td .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:3px;vertical-align:1px}
+.cal td.none{color:#C3CAD1;cursor:default}
+.cal td.best .p{color:var(--red)}
+.stamp{position:absolute;top:4px;left:50%;transform:translateX(-50%) rotate(-6deg);white-space:nowrap;background:var(--pop);color:var(--ink);font-family:"Dela Gothic One",sans-serif;font-size:10px;padding:1px 5px;border-radius:3px;box-shadow:0 1px 0 rgba(0,0,0,.15)}
+.cal td.sel{background:#FFF8DB}
+.caldetail{margin-top:10px}
+.addfav{display:flex;gap:8px;margin:12px 0}
+.addfav input{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--card)}
+.btn{border:0;background:var(--ink);color:#fff;border-radius:10px;padding:9px 16px;font-weight:700;cursor:pointer}
+.btn.red{background:var(--red)}
+.btn.ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.favchips{display:flex;flex-wrap:wrap;gap:6px}
+.favchip{display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1.5px solid var(--line);border-radius:99px;padding:3px 6px 3px 12px;font-size:13px}
+.favchip button{border:0;background:#F1F3F5;border-radius:50%;width:22px;height:22px;cursor:pointer;line-height:1}
+.favchip.sugg{border-style:dashed;cursor:pointer;padding-right:12px}
+h2{font-size:17px;margin:18px 2px 8px}
+p.note{font-size:12.5px;color:var(--muted);margin:6px 2px}
+
+/* upload */
+.panel{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px}
+.field{display:grid;gap:4px;margin-bottom:10px}
+.field label{font-size:12px;color:var(--muted)}
+.field input,.field select{border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;width:100%}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.drop{display:block;border:2px dashed #B8C2CC;border-radius:12px;padding:20px;text-align:center;cursor:pointer;color:var(--muted)}
+.drop b{color:var(--ink);display:block}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.thumbs img{width:62px;height:88px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.progress{font-size:13px;margin:10px 0;color:var(--muted)}
+.err{background:#FDE8E7;color:#9B1C17;border-radius:10px;padding:10px 12px;font-size:13px;margin:10px 0}
+.res{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:7px 0;font-size:13.5px}
+.res input[type=number]{width:76px;border:1.5px solid var(--line);border-radius:8px;padding:3px 6px;text-align:right}
+.res small{color:var(--muted);display:block}
+.storelinks{display:grid;gap:8px;margin-bottom:12px}
+.storelink{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);border-left:5px solid var(--sc)}
+.storelink small{color:var(--muted)}
+.saved{font-size:13px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:13px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (min-width:700px){.deal .name{font-size:16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><h1 class="dela">買い時<span>ノート</span></h1><span class="meta" id="todayLabel"></span></div>
+  <div class="meta" id="updated">読み込み中…</div>
+</header>
+
+<main>
+  <!-- 特売 -->
+  <section id="tab-deals">
+    <div class="days" id="days" role="group" aria-label="日付を選ぶ"></div>
+    <div class="toolbar">
+      <input class="search" id="q" type="search" placeholder="商品名で探す（例：卵、豚こま）">
+      <label class="toggle"><input type="checkbox" id="onlyFav">よく買うもの</label>
+    </div>
+    <div class="chips" id="cats"></div>
+    <div id="dealList"></div>
+  </section>
+
+  <!-- 買い時カレンダー -->
+  <section id="tab-cal" hidden>
+    <h2>よく買うものの3日先まで</h2>
+    <p class="note">各日でいちばん安い店と価格。<b>買い時</b>の印がある日に買うのがお得です。</p>
+    <div class="cal" id="cal"></div>
+    <div class="caldetail" id="calDetail"></div>
+    <h2>よく買うもの</h2>
+    <form class="addfav" id="favForm"><input id="favIn" placeholder="追加する（例：卵、牛乳、バナナ）" autocomplete="off"><button class="btn">追加</button></form>
+    <div class="favchips" id="favList"></div>
+    <div id="suggWrap"></div>
+  </section>
+
+  <!-- 読み取り -->
+  <section id="tab-read" hidden>
+    <h2>チラシを開く</h2>
+    <div class="storelinks">
+      <a class="storelink" style="--sc:var(--pal)" href="https://www.instagram.com/palyamato/" target="_blank" rel="noopener"><span><b>パル・ヤマト 芦屋店</b><br><small>Instagram ストーリーズ → スクショ</small></span><span>開く ›</span></a>
+      <a class="storelink" style="--sc:var(--lopia)" href="https://tokubai.co.jp/%E3%83%AD%E3%83%94%E3%82%A2/291670" target="_blank" rel="noopener"><span><b>ロピア 西宮今津店</b><br><small>トクバイのチラシ → スクショ</small></span><span>開く ›</span></a>
+      <a class="storelink" style="--sc:var(--life)" href="https://chirashi.line.me/branches/65962d763b54907006de0ad7" target="_blank" rel="noopener"><span><b>ライフ 阪神芦屋店</b><br><small>毎朝自動で読み取り済み</small></span><span>開く ›</span></a>
+    </div>
+    <h2>画像を読み取る</h2>
+    <div class="panel">
+      <div class="field"><label for="upStore">お店</label>
+        <select id="upStore">
+          <option value="palyamato_ashiya">パル・ヤマト 芦屋店</option>
+          <option value="lopia_nishinomiya_imazu">ロピア 西宮今津店</option>
+          <option value="life_hanshin_ashiya">ライフ 阪神芦屋店</option>
+          <option value="other">その他のお店</option>
+        </select></div>
+      <div class="row2">
+        <div class="field"><label for="upFrom">特売の開始日</label><input type="date" id="upFrom"></div>
+        <div class="field"><label for="upTo">終了日</label><input type="date" id="upTo"></div>
+      </div>
+      <p class="note" style="margin-top:-4px">画像の中に「〇日限り」などの日付があれば、そちらが優先されます。</p>
+      <label class="drop" for="upFile"><b>スクショ・写真を選ぶ</b>複数枚まとめて選べます</label>
+      <input type="file" id="upFile" accept="image/*" multiple hidden>
+      <div class="thumbs" id="thumbs"></div>
+      <div style="margin-top:12px"><button class="btn red" id="readBtn" disabled>読み取る</button></div>
+      <div id="readStatus"></div>
+      <div id="readResult"></div>
+    </div>
+    <h2>読み取り済み</h2>
+    <div class="panel" id="savedList"></div>
+  </section>
+
+  <!-- 設定 -->
+  <section id="tab-set" hidden>
+    <h2>AI 読み取りの設定</h2>
+    <div class="panel">
+      <div class="field"><label for="apiKey">Gemini API キー（この端末だけに保存）</label><input id="apiKey" type="password" placeholder="AQ.…（AIza で始まるキーも可）" autocomplete="off"></div>
+      <div class="field"><label for="model">モデル名</label><input id="model" placeholder="gemini-flash-latest"></div>
+      <button class="btn" id="saveKey">保存</button>
+      <p class="note">キーは <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> で発行できます。</p>
+    </div>
+    <h2>家族の端末にうつす</h2>
+    <div class="panel">
+      <p class="note" style="margin-top:0">よく買うもの・買った記録・読み取り結果はこの端末に保存されています。書き出したファイルを別の端末で読み込むと同じ状態になります。</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost" id="exportBtn">書き出す</button>
+        <label class="btn ghost" for="importFile" style="display:inline-block">読み込む</label>
+        <input type="file" id="importFile" accept="application/json" hidden>
+      </div>
+    </div>
+    <h2>データ</h2>
+    <div class="panel" id="dataInfo"></div>
+  </section>
+</main>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="deals" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>特売</button>
+  <button role="tab" data-tab="cal" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h2M14 14h2M8 18h2"/></svg>買い時</button>
+  <button role="tab" data-tab="read" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><circle cx="12" cy="12" r="3.5"/></svg>読み取り</button>
+  <button role="tab" data-tab="set" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>設定</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script id="seed" type="application/json">{
+ "generated_at": "2026-10-16T18:45:00+09:00",
+ "source": "LINEチラシ（ライフ阪神芦屋店）",
+ "flyers": [
+  {
+   "id": "6acfc986dbaad65a7d0f4aab",
+   "store": "life_hanshin_ashiya",
+   "name": "10/17(土)~ライフ祭",
+   "start": "2026-10-17",
+   "end": "2026-10-20",
+   "image": "https://chirashi-obs.line-scdn.net/0hKGl1dr96FGhRSAjAlaFrPwkaEwA_KBFnNTAdWicJVAoneRZBJlkfZnYzASQnKldsMlEAXjwjATkaORVBNUVabxIoFg0ZeRptC1kCcSs8DA0ZCBhBG3wddSgSQiQM"
+  },
+  {
+   "id": "6acfc986dbaad65a7d0f4aaa",
+   "store": "life_hanshin_ashiya",
+   "name": "10/17(土)~ライフ祭",
+   "start": "2026-10-17",
+   "end": "2026-10-20",
+   "image": "https://chirashi-obs.line-scdn.net/0hzkrRfSnQJURPKznsi8JaExF5IiwhSyBLK1MsdjlqZSY5GmBucTlvcQNbMyYpcCRtFQ9pWTVXcyQ9a2FpLC1iSRhAexUHbCd6FTlpcA9cJwoXZGFuBj02cg8qPQ"
+  },
+  {
+   "id": "6ac9e5e90bcb655f9b5a84fb",
+   "store": "life_hanshin_ashiya",
+   "name": "10/14(水)~ライフの安得市",
+   "start": "2026-10-14",
+   "end": "2026-10-16",
+   "image": "https://chirashi-obs.line-scdn.net/0hXWCDTHb0B3h-PRvWlpZ4LyNvABAQXQJ3GkUOSgh8RxoIDEBSQRoATD1aWiMMZgZ7Hh0UTBA9GRomZRx7N1sSZQRZUTQ1DEV8CTATTgc9Bjcmfh9SMDAJfz5N"
+  },
+  {
+   "id": "6ac9e5e90bcb655f9b5a84fc",
+   "store": "life_hanshin_ashiya",
+   "name": "10/14(水)~ライフの安得市",
+   "start": "2026-10-14",
+   "end": "2026-10-16",
+   "image": "https://chirashi-obs.line-scdn.net/0hw-bFHS_dKAJfPzSst5dXVQdtL2oxXy0NO0chMCl-aGApDiorYFE9NzFqL04beG4_CjksNDJUPVMUTikrOzJmBRxfKmcXDiYHBgAsGyZAPWJxXSQqFikhHyZlfk4C"
+  },
+  {
+   "id": "6ac089fe0bcb655f9b5a5482",
+   "store": "life_hanshin_ashiya",
+   "name": "10月ぶっとおし!超特価で家計応援",
+   "start": "2026-10-08",
+   "end": "2026-10-31",
+   "image": "https://chirashi-obs.line-scdn.net/0h1IXy7tiBbmZlAHLB4lcRMT1SaQ4LYGtpAXhnVBNBLgQTMWxPAhokfyZCMwMuOWFjBQ1jaBhrezcucW9PAQ0gYSZgbAMtMWBjPA1hfBxaeD4UYmJlBTRpexxaOCo4"
+  },
+  {
+   "id": "6ac089ecf1eae512d7194041",
+   "store": "life_hanshin_ashiya",
+   "name": "10月ボーナスポイント特集",
+   "start": "2026-10-08",
+   "end": "2026-10-31",
+   "image": "https://chirashi-obs.line-scdn.net/0hvsNhxjGrKVxzETX797hWCy1DLjQdcSxTF2kgbgVQaT4FICtfOio8ag16MxM4QW5YFBw-QQltfzwBUW1xEBduUSR6dw07Vit1Eykuai9qND4VXjN2Ogc6ajMQMQ"
+  },
+  {
+   "id": "6ab920790bcb655f9b5a1dc1",
+   "store": "life_hanshin_ashiya",
+   "name": "10/1(木)~これ買えるのライフだけ",
+   "start": "2026-10-01",
+   "end": "2026-10-31",
+   "image": "https://chirashi-obs.line-scdn.net/0hBUWWNIWiHXpqLgGieOJiLTJ8GhIEThh1DlYUSBxvXRgcHx9TPyMSTk1NHBgxHgdQMC8RSS1FCCshXxxTDiNTfSlOHx8iHxN_MyBXYDloQBohF1pEMzgUZxN0SzY3"
+  },
+  {
+   "id": "6ab920790bcb655f9b5a1dc2",
+   "store": "life_hanshin_ashiya",
+   "name": "10/1(木)~これ買えるのライフだけ",
+   "start": "2026-10-01",
+   "end": "2026-10-31",
+   "image": "https://chirashi-obs.line-scdn.net/0h24OiqetcbRtyEHHDYNwSTCpCanMccGgUFmhkKQRRLXkEIW8xJxYiLz5ndlcEfW4mTQpkLSV7eEo5YWwyFh0jHDFwb346IWMeKx4nASFWMHs6QCslTSRkBgtKO1cv"
+  },
+  {
+   "id": "6ac9e5fef1eae512d71972b1",
+   "store": "life_hanshin_ashiya",
+   "name": "10/15~18 LaCuCa特別企画",
+   "start": "2026-10-15",
+   "end": "2026-10-18",
+   "image": "https://chirashi-obs.line-scdn.net/0hYPhoCU9CBn9VFhrRvkF5KAtEARc7dgNwMW4PTSNXRh0jJ0BCNhcSZi9hHzAjcwN5DyUKYi9qUB8nVkJSNhBBcgJ9WC4dUQRXEAxKcgVhEzENRRxVHAAVSRUXHg"
+  }
+ ],
+ "items": [
+  {
+   "id": "bf439c1960",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "熊本・佐賀産 みかん(大袋)",
+   "item_key": "みかん",
+   "category": "果物",
+   "price": 498.0,
+   "price_tax": 537.0,
+   "quantity": "1kg入1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "04e95f7258",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "熊本県産河内地区より 海空(みそら)みかん",
+   "item_key": "みかん",
+   "category": "果物",
+   "price": 598.0,
+   "price_tax": 645.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "ライフのカード会員様 +10ポイント"
+  },
+  {
+   "id": "1b7b27460c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "和歌山・奈良産 種なし柿",
+   "item_key": "柿",
+   "category": "果物",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "2Lサイズ1コ",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "ae0d796067",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "奈良・和歌山産 ワケあり種なし柿",
+   "item_key": "柿",
+   "category": "果物",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "0f96e67f65",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "福岡産 八女みかん",
+   "item_key": "みかん",
+   "category": "果物",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "b58002bb65",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "青森産 早生ふじりんご",
+   "item_key": "りんご",
+   "category": "果物",
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "Lサイズ1玉",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "6d0decdf14",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "青森産 糖度13度選果 早生ふじりんご",
+   "item_key": "りんご",
+   "category": "果物",
+   "price": 598.0,
+   "price_tax": 645.0,
+   "quantity": "2玉入1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "59dce32a40",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "福島県産他 豊水梨",
+   "item_key": "梨",
+   "category": "果物",
+   "price": 680.0,
+   "price_tax": 734.0,
+   "quantity": "3Lサイズ2玉入1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "ee6a9949c6",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "岡山県産 JA晴れの国岡山より ピオーネ",
+   "item_key": "ぶどう",
+   "category": "果物",
+   "price": 980.0,
+   "price_tax": 1058.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "ada6eae81a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "大分・北海道産他 ピーマン",
+   "item_key": "ピーマン",
+   "category": "野菜",
+   "price": 158.0,
+   "price_tax": 170.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "5e83368711",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "北海道産他 南瓜",
+   "item_key": "かぼちゃ",
+   "category": "野菜",
+   "price": 49.0,
+   "price_tax": 52.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "fa001fe6dd",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "韓国産 パプリカ",
+   "item_key": "パプリカ",
+   "category": "野菜",
+   "price": 158.0,
+   "price_tax": 170.0,
+   "quantity": "Sサイズ1コ",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "e03708f877",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "長野産他 はくさい",
+   "item_key": "白菜",
+   "category": "野菜",
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "1/4切",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "e6153f68df",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "高知産他 にら",
+   "item_key": "にら",
+   "category": "野菜",
+   "price": 158.0,
+   "price_tax": 170.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "c6332c15e0",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "北海道産他 白ねぎ",
+   "item_key": "長ねぎ",
+   "category": "野菜",
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "1束",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "d962058566",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "三重産他 有機栽培 生しいたけ(大袋)",
+   "item_key": "生椎茸",
+   "category": "野菜",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "200g入1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "4cb9051e6c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "長野産 えのき茸(大袋)",
+   "item_key": "えのき茸",
+   "category": "野菜",
+   "price": 158.0,
+   "price_tax": 170.0,
+   "quantity": "300g入1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "b96c475e89",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "北海道産他 洋にんじん",
+   "item_key": "人参",
+   "category": "野菜",
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "3本入1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "fa249d8fc2",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "茨城・千葉産他 さつまいも(紅はるか)",
+   "item_key": "さつまいも",
+   "category": "野菜",
+   "price": 158.0,
+   "price_tax": 170.0,
+   "quantity": "Mサイズ1本",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "9a079129d5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "佐賀・茨城産 れんこん",
+   "item_key": "れんこん",
+   "category": "野菜",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "d3ab32203b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "愛媛産他 里いも(大袋)",
+   "item_key": "里芋",
+   "category": "野菜",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "700g入1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "3487f3aa31",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "生本まぐろ入!彩り豊かうを鮨盛合せ",
+   "item_key": "寿司盛合せ",
+   "category": "惣菜",
+   "price": 1390.0,
+   "price_tax": 1501.0,
+   "quantity": "10貫",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "0eaf93143a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "ぶりが主役のお造り盛合せ",
+   "item_key": "刺身盛合せ",
+   "category": "魚",
+   "price": 798.0,
+   "price_tax": 861.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "2cfb77ded9",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "冷凍背わた取り 大粒むきえび",
+   "item_key": "むきえび",
+   "category": "魚",
+   "price": 698.0,
+   "price_tax": 753.0,
+   "quantity": "320g入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "8c32870346",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "シュリンプカクテル各種",
+   "item_key": "シュリンプカクテル",
+   "category": "惣菜",
+   "price": 799.0,
+   "price_tax": 862.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "6abaa5035a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "生本まぐろ入！うを鮨盛合せ(鞠)",
+   "item_key": "寿司盛合せ",
+   "category": "惣菜",
+   "price": 1990.0,
+   "price_tax": 2149.0,
+   "quantity": "16貫",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "2ba08cec2b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "北極圏生サーモンにぎり",
+   "item_key": "サーモンにぎり",
+   "category": "惣菜",
+   "price": 990.0,
+   "price_tax": 1069.0,
+   "quantity": "8貫",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "a4c71fa419",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "ノルウェー産 北極圏生サーモン冊(刺身用・養殖)",
+   "item_key": "サーモン刺身",
+   "category": "魚",
+   "price": 498.0,
+   "price_tax": 537.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "4255dfe03f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "MEL認証 ボイルほたて貝小(生食用)",
+   "item_key": "ほたて",
+   "category": "魚",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-19",
+   "condition": null
+  },
+  {
+   "id": "a1b519c567",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "釜揚げしらす",
+   "item_key": "しらす",
+   "category": "魚",
+   "price": 358.0,
+   "price_tax": 386.0,
+   "quantity": "80g入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-19",
+   "condition": null
+  },
+  {
+   "id": "827a8354de",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "「牛6:豚4」国内産合挽肉(解凍)",
+   "item_key": "牛豚合挽肉",
+   "category": "肉",
+   "price": 228.0,
+   "price_tax": 246.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "056a732f44",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "お肉がうまいハンバーグ使用！ピーマン肉詰め",
+   "item_key": "ピーマン肉詰め",
+   "category": "惣菜",
+   "price": 480.0,
+   "price_tax": 518.0,
+   "quantity": "8コ入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "畜産コーナーでの取り扱いとなります"
+  },
+  {
+   "id": "df6efc9bd6",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "北海道産 十勝黒牛こま切れ・スネ角切り・スネブロック(交雑種)",
+   "item_key": "牛肉こま切れ",
+   "category": "肉",
+   "price": 428.0,
+   "price_tax": 462.0,
+   "quantity": "各100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "4f98e4d402",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "大分県産 豊後健康どり もも角切り",
+   "item_key": "鶏もも",
+   "category": "肉",
+   "price": 188.0,
+   "price_tax": 203.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "8ab356a9fe",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "ライフ×ダイショー 西京味噌使用 鶏みそ鍋スープ",
+   "item_key": "鍋つゆ",
+   "category": "加工食品",
+   "price": 278.0,
+   "price_tax": 300.0,
+   "quantity": "750g入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "畜産コーナーでの取り扱いとなります"
+  },
+  {
+   "id": "fbb6ba4bdf",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "伊藤ハム アルトバイエルン2コ束",
+   "item_key": "ウインナー",
+   "category": "肉",
+   "price": 358.0,
+   "price_tax": 386.0,
+   "quantity": "234g入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "9bf182a187",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "スマイルライフ 切り落としベーコン",
+   "item_key": "ベーコン",
+   "category": "肉",
+   "price": 358.0,
+   "price_tax": 386.0,
+   "quantity": "180g入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "9e4b953743",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "スマイルライフ 切り落としロースハム",
+   "item_key": "ロースハム",
+   "category": "肉",
+   "price": 358.0,
+   "price_tax": 386.0,
+   "quantity": "224g入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "6762d03bf4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "旭化成 サランラップ ミニ",
+   "item_key": "ラップ",
+   "category": "日用品",
+   "price": 328.0,
+   "price_tax": 360.0,
+   "quantity": "22cm×50m",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各日各2点まで"
+  },
+  {
+   "id": "b3c7e0181f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "旭化成 サランラップ",
+   "item_key": "ラップ",
+   "category": "日用品",
+   "price": 428.0,
+   "price_tax": 470.0,
+   "quantity": "30cm×50m",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各日各2点まで"
+  },
+  {
+   "id": "b804af76b0",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "大正製薬 リポビタンD",
+   "item_key": "栄養ドリンク",
+   "category": "日用品",
+   "price": 898.0,
+   "price_tax": 987.0,
+   "quantity": "100ml×10本",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各日5点まで"
+  },
+  {
+   "id": "d454a85d29",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "サランラップ",
+   "item_key": "ラップ",
+   "category": "日用品",
+   "price": 328.0,
+   "price_tax": 360.0,
+   "quantity": "null",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "0aacff0e58",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "サランラップ",
+   "item_key": "ラップ",
+   "category": "日用品",
+   "price": 428.0,
+   "price_tax": 470.0,
+   "quantity": "null",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "8a9f1d6407",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "ネピア",
+   "item_key": "ティッシュペーパー",
+   "category": "日用品",
+   "price": 358.0,
+   "price_tax": 393.0,
+   "quantity": "1箱(200組)×5箱パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各日2点まで/表示価格よりレジにて1割引対象"
+  },
+  {
+   "id": "4794843df4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "エリエール i:na ロール シングル",
+   "item_key": "トイレットペーパー",
+   "category": "日用品",
+   "price": 778.0,
+   "price_tax": 855.0,
+   "quantity": "100m×12ロール",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各日2点まで/表示価格よりレジにて1割引対象"
+  },
+  {
+   "id": "0ca521a9ac",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "P&G アリエール 詰替 各種",
+   "item_key": "洗濯洗剤",
+   "category": "日用品",
+   "price": 298.0,
+   "price_tax": 327.0,
+   "quantity": "625g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各日各2点まで"
+  },
+  {
+   "id": "9da9d8ed7e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "P&G アリエール 詰替 ウルトラジャンボサイズ 各種",
+   "item_key": "洗濯洗剤",
+   "category": "日用品",
+   "price": 648.0,
+   "price_tax": 712.0,
+   "quantity": "1400g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各日各2点まで"
+  },
+  {
+   "id": "df345edc70",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "P&G レノア 煮沸レベル消臭 抗菌ビーズ 本体 各種 / アロマジュエル 本体 各種",
+   "item_key": "柔軟剤・香りづけビーズ",
+   "category": "日用品",
+   "price": 548.0,
+   "price_tax": 602.0,
+   "quantity": "420ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各日各2点まで"
+  },
+  {
+   "id": "b18e22fa6e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "P&G レノア アロマジュエル 詰替 特大サイズ 各種 / 煮沸レベル消臭 抗菌ビーズ 詰替 特大サイズ 各種",
+   "item_key": "柔軟剤・香りづけビーズ",
+   "category": "日用品",
+   "price": 1480.0,
+   "price_tax": 1628.0,
+   "quantity": "null",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各日各2点まで"
+  },
+  {
+   "id": "5404f19fea",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "スマイルライフ 無添加ラップ ミニ",
+   "item_key": "ラップ",
+   "category": "日用品",
+   "price": 248.0,
+   "price_tax": 272.0,
+   "quantity": "22cm×50m",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "c7ac2c5bf4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "スマイルライフ 無添加ラップ",
+   "item_key": "ラップ",
+   "category": "日用品",
+   "price": 258.0,
+   "price_tax": 283.0,
+   "quantity": "30cm×50m",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "7a95a4fcda",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "プレミアぶりを愉しむにぎり寿司盛り合わせ、サーモンを愉しむにぎり寿司盛り合わせ",
+   "item_key": "にぎり寿司",
+   "category": "惣菜",
+   "price": 880.0,
+   "price_tax": 950.0,
+   "quantity": "各1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "e696c3b419",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "長崎風豚角煮重",
+   "item_key": "弁当",
+   "category": "惣菜",
+   "price": 699.0,
+   "price_tax": 754.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "3b1443c43f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "おすすめ惣菜よりどりセール",
+   "item_key": "惣菜",
+   "category": "惣菜",
+   "price": 399.0,
+   "price_tax": 430.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "586d72512a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "おすすめ惣菜よりどりセール",
+   "item_key": "惣菜",
+   "category": "惣菜",
+   "price": 780.0,
+   "price_tax": 842.0,
+   "quantity": "よりどり2パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "b2424f6467",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "中華惣菜盛り合わせ、おつまみ惣菜盛り合わせ",
+   "item_key": "惣菜",
+   "category": "惣菜",
+   "price": 699.0,
+   "price_tax": 754.0,
+   "quantity": "各1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "3b0c087633",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "小麦の郷 ミニクロワッサン 9コ+2コ増量",
+   "item_key": "クロワッサン",
+   "category": "日配",
+   "price": 399.0,
+   "price_tax": 430.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "084f1c378c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "キユーピー マヨネーズ 450g、ハーフ1/2 マヨネーズタイプ 400g",
+   "item_key": "マヨネーズ",
+   "category": "加工食品",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "各1本",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "8c9674b84b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "UCC ゴールドスペシャル (スペシャルブレンド・リッチブレンド)",
+   "item_key": "レギュラーコーヒー",
+   "category": "飲料",
+   "price": 598.0,
+   "price_tax": 645.0,
+   "quantity": "各240g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "fba8a62a42",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "キリン 午後の紅茶 ミルクティー 500ml、生茶 525ml",
+   "item_key": "お茶",
+   "category": "飲料",
+   "price": 79.0,
+   "price_tax": 85.0,
+   "quantity": "各1本",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "ライフのカード会員様+10ポイント"
+  },
+  {
+   "id": "bbcb1d9255",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "明治 アーモンドチョコレート 79g、マカダミアチョコレート 9粒入",
+   "item_key": "チョコレート",
+   "category": "菓子",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "各1箱",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "ea13338f64",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "ロッテ パイの実 シェアパック、チョコを味わうパイの実 シェアパック 深みショコラ",
+   "item_key": "パイの実",
+   "category": "菓子",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "各124g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "af1dd2fc6d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "ヤマザキビスケット チップスターL (うすしお味・コンソメ味)",
+   "item_key": "ポテトチップス",
+   "category": "菓子",
+   "price": 159.0,
+   "price_tax": 171.0,
+   "quantity": "各105g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "19b5161600",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "キリン 一番搾り、晴れ風",
+   "item_key": "ビール",
+   "category": "酒",
+   "price": 1038.0,
+   "price_tax": 1141.0,
+   "quantity": "各350ml×6缶パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "ライフのカード会員様+40ポイント"
+  },
+  {
+   "id": "8ae8ea9be4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "キリン 氷結無糖 キウイ",
+   "item_key": "チューハイ",
+   "category": "酒",
+   "price": 128.0,
+   "price_tax": 140.0,
+   "quantity": "350ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "1dd3b17696",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "釜揚げしらす",
+   "item_key": "しらす",
+   "category": "魚",
+   "price": 358.0,
+   "price_tax": 386.0,
+   "quantity": "80g入",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": null
+  },
+  {
+   "id": "f0405cf80d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "日清 どん兵衛 (きつねうどん・天ぷらそば・肉うどん)、焼そばU.F.O.",
+   "item_key": "カップ麺",
+   "category": "加工食品",
+   "price": 139.0,
+   "price_tax": 150.0,
+   "quantity": "各1コ",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "04aa1186a7",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "日清 どん兵衛 (きつねうどん・天ぷらそば・肉うどん)、焼そばU.F.O.",
+   "item_key": "カップ麺",
+   "category": "加工食品",
+   "price": 405.0,
+   "price_tax": 437.0,
+   "quantity": "よりどり3コ",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "fff7ef39cf",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "バリラ スパゲッティ No.4 1.6mm",
+   "item_key": "パスタ",
+   "category": "加工食品",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "500g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "052e1d6a08",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "ロッテ パイの実 シェアパック、チョコを味わうパイの実 シェアパック深みショコラ",
+   "item_key": "チョコレート菓子",
+   "category": "菓子",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "各124g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "7dfcfcf2d0",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "キユーピー 深煎りごまドレッシング",
+   "item_key": "ドレッシング",
+   "category": "加工食品",
+   "price": 328.0,
+   "price_tax": 354.0,
+   "quantity": "380ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "e1e9264343",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "宮城県産 ひとめぼれ",
+   "item_key": "精米",
+   "category": "米",
+   "price": 2380.0,
+   "price_tax": 2570.0,
+   "quantity": "1袋(5kg)",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "3ce4a25258",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "宮城県産 ひとめぼれ",
+   "item_key": "精米",
+   "category": "米",
+   "price": 4580.0,
+   "price_tax": 4946.0,
+   "quantity": "2袋(計10kg)",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "54a1ca3af1",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "森永乳業 ビヒダス プレーンヨーグルト、ビヒダス プレーンヨーグルト脂肪0",
+   "item_key": "ヨーグルト",
+   "category": "日配",
+   "price": 149.0,
+   "price_tax": 160.0,
+   "quantity": "各400g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "5420051838",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "森永乳業 北海道バター",
+   "item_key": "バター",
+   "category": "日配",
+   "price": 458.0,
+   "price_tax": 494.0,
+   "quantity": "180g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "dc3fb998e7",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "日清 関西風お好み焼 (ぶた玉・いか玉)",
+   "item_key": "冷凍お好み焼き",
+   "category": "加工食品",
+   "price": 179.0,
+   "price_tax": 193.0,
+   "quantity": "各1枚入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "6973e99cb4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "ロッテ モナ王 バニラ",
+   "item_key": "アイスクリーム",
+   "category": "加工食品",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "5コ入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "60418c4a5f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "アロマジュエル 詰替 特大サイズ 各種",
+   "item_key": "衣料用香りづけビーズ",
+   "category": "日用品",
+   "price": 1480.0,
+   "price_tax": 1628.0,
+   "quantity": "各",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "d6c92ee803",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "スマイルライフ 無添加ラップ ミニ",
+   "item_key": "食品用ラップ",
+   "category": "日用品",
+   "price": 248.0,
+   "price_tax": 272.0,
+   "quantity": "22cm×50m",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "f786d15430",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aab",
+   "name": "スマイルライフ 無添加ラップ",
+   "item_key": "食品用ラップ",
+   "category": "日用品",
+   "price": 258.0,
+   "price_tax": 283.0,
+   "quantity": "30cm×50m",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "00d0f54db6",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "北海道産 玉ねぎ(大ネット)",
+   "item_key": "玉ねぎ",
+   "category": "野菜",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "Lサイズ 6コ入1ネット",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": null
+  },
+  {
+   "id": "5775359c46",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "北海道産 JA帯広大正より 大正メークイン(大袋)",
+   "item_key": "じゃがいも",
+   "category": "野菜",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "1kg入1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": null
+  },
+  {
+   "id": "4419e5cc54",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "山梨・長野産他 シャインマスカット(房)",
+   "item_key": "ぶどう",
+   "category": "果物",
+   "price": 980.0,
+   "price_tax": 1058.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": "お1人様1点限り 先着10名様"
+  },
+  {
+   "id": "a09d890bb7",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "和歌山産 種なし柿(小箱)",
+   "item_key": "柿",
+   "category": "果物",
+   "price": 980.0,
+   "price_tax": 1058.0,
+   "quantity": "Mサイズ 12コ入1箱",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": null
+  },
+  {
+   "id": "a68f88c804",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "日清 カップヌードル、カップヌードル カレー、シーフードヌードル",
+   "item_key": "カップ麺",
+   "category": "加工食品",
+   "price": 119.0,
+   "price_tax": 128.0,
+   "quantity": "各1食",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": "お1人様各6点まで"
+  },
+  {
+   "id": "61599ada0b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "国内産 若どりもも肉",
+   "item_key": "鶏もも",
+   "category": "肉",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": null
+  },
+  {
+   "id": "e5b9dbd70f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "スマイルライフ 北海道3.7函館直送牛乳",
+   "item_key": "牛乳",
+   "category": "日配",
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "1000ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": null
+  },
+  {
+   "id": "0b97885f8e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "里山のたまご",
+   "item_key": "卵",
+   "category": "日配",
+   "price": 238.0,
+   "price_tax": 257.0,
+   "quantity": "1パック(10コ入)",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": "お買上げ金額1,000円(税抜)以上、1会計お1人様1点限り、先着200名様"
+  },
+  {
+   "id": "4b48b57ca7",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "スマイルライフ とろけるミックスチーズ",
+   "item_key": "チーズ",
+   "category": "日配",
+   "price": 798.0,
+   "price_tax": 861.0,
+   "quantity": "700g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": null
+  },
+  {
+   "id": "e4a365ff7b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ネスカフェ ゴールドブレンド(エコ&システムパック)・コク深め エコ&システムパック",
+   "item_key": "インスタントコーヒー",
+   "category": "飲料",
+   "price": 698.0,
+   "price_tax": 753.0,
+   "quantity": "各95g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-17",
+   "condition": "お1人様各1点限り"
+  },
+  {
+   "id": "e89d1b4d69",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "北海道産他 トマト",
+   "item_key": "トマト",
+   "category": "野菜",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "9126a29e18",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ニュージーランド産 グリーンキウイ、サンゴールドキウイ",
+   "item_key": "キウイ",
+   "category": "果物",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "各Lサイズ1コ",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "61485d794d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "鹿児島産他 うなぎ蒲焼 大",
+   "item_key": "うなぎ蒲焼",
+   "category": "魚",
+   "price": 1680.0,
+   "price_tax": 1814.0,
+   "quantity": "1尾入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "5ea2b73923",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "鹿児島産他 うなぎ蒲焼 大",
+   "item_key": "うなぎ蒲焼",
+   "category": "魚",
+   "price": 2980.0,
+   "price_tax": 3218.0,
+   "quantity": "2尾入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "0bfd535cbf",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "東海漬物 こくうま熟うま辛キムチ",
+   "item_key": "キムチ",
+   "category": "日配",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "300g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "834f9d6913",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "サントリー ブレンディ ボトルコーヒー(無糖・微糖・低糖)",
+   "item_key": "コーヒー飲料",
+   "category": "飲料",
+   "price": 119.0,
+   "price_tax": 128.0,
+   "quantity": "各950ml 各1本",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各1ケース(12本)限り"
+  },
+  {
+   "id": "f7cb3e4bf5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "くらしモア・はごろも シーチキン(マイルド・Lフレーク)",
+   "item_key": "ツナ缶",
+   "category": "加工食品",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "各70g×3缶",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "e1f3c31388",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "伊藤ハム マルゲリータピザ、ベーコンピザ",
+   "item_key": "チルドピザ",
+   "category": "日配",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "各1枚",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "03318bb91a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ニッスイ まるごとおいしい太ちくわ",
+   "item_key": "ちくわ",
+   "category": "日配",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "3本入",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "646b34c656",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "岐阜産他 ほうれん草",
+   "item_key": "ほうれん草",
+   "category": "野菜",
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各1点限り 先着各100名様"
+  },
+  {
+   "id": "518e55fb1b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "北海道産他 ブロッコリー",
+   "item_key": "ブロッコリー",
+   "category": "野菜",
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "1株",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各1点限り 先着各100名様"
+  },
+  {
+   "id": "c3e845d734",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "国内産 若どりむね肉",
+   "item_key": "鶏むね",
+   "category": "肉",
+   "price": 78.0,
+   "price_tax": 84.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "cf71282d62",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "サントリー ブレンディ ボトルコーヒー(無糖・微糖・低糖)",
+   "item_key": "ボトルコーヒー",
+   "category": "飲料",
+   "price": 119.0,
+   "price_tax": 128.0,
+   "quantity": "各1本(各950ml)",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各1ケース(12本)限り"
+  },
+  {
+   "id": "516dd75fd5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "サントリー ブレンディ ボトルコーヒー(無糖・微糖・低糖)",
+   "item_key": "ボトルコーヒー",
+   "category": "飲料",
+   "price": 1298.0,
+   "price_tax": 1401.0,
+   "quantity": "各1ケース(12本)",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各1ケース(12本)限り"
+  },
+  {
+   "id": "8a76277059",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "MEL認証 三陸産 塩銀鮭(甘口)",
+   "item_key": "鮭切身",
+   "category": "魚",
+   "price": 980.0,
+   "price_tax": 1058.0,
+   "quantity": "5切入",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "3b392507c9",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "湖池屋 スコーン(やみつきバーベキュー・絶品焼きとうもろこし)",
+   "item_key": "スナック菓子",
+   "category": "菓子",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "各73g",
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "40050e918c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "P&G レノア 超消臭 本体各種・ハピネス 夢ふわタッチ 本体各種",
+   "item_key": "柔軟剤",
+   "category": "日用品",
+   "price": 178.0,
+   "price_tax": 195.0,
+   "quantity": null,
+   "date_from": "2026-10-18",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各2点まで / ライフアプリ限定クーポンをセットして20円引(1点限り)"
+  },
+  {
+   "id": "d7ce456329",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "北海道産 長いも",
+   "item_key": "長芋",
+   "category": "野菜",
+   "price": 358.0,
+   "price_tax": 386.0,
+   "quantity": "Lサイズ1本",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "d0f7d468ef",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "セネガル産 ボイル真だこ小(生食用)",
+   "item_key": "タコ",
+   "category": "魚",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "281cdcb25b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "国内産 若どり手羽元",
+   "item_key": "鶏手羽元",
+   "category": "肉",
+   "price": 78.0,
+   "price_tax": 84.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "21973a4d3e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "鹿児島県産 さつまハーブもち豚こま切れ",
+   "item_key": "豚こま切落し",
+   "category": "肉",
+   "price": 138.0,
+   "price_tax": 149.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "fbaf4e4a6a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ジョンソン 洗たく槽カビキラー",
+   "item_key": "洗たく槽クリーナー",
+   "category": "日用品",
+   "price": 198.0,
+   "price_tax": 217.0,
+   "quantity": "550g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様2点まで"
+  },
+  {
+   "id": "c6fee8e815",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "爽健美茶・健康ミネラルむぎ茶・お〜いお茶 緑茶 各2L",
+   "item_key": "緑茶・麦茶・ブレンド茶",
+   "category": "飲料",
+   "price": 109.0,
+   "price_tax": 117.0,
+   "quantity": "各1本",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各1ケース(6本)限り"
+  },
+  {
+   "id": "a924175dc2",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "爽健美茶・健康ミネラルむぎ茶・お〜いお茶 緑茶 各2L",
+   "item_key": "緑茶・麦茶・ブレンド茶",
+   "category": "飲料",
+   "price": 598.0,
+   "price_tax": 645.0,
+   "quantity": "各1ケース(6本)",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各1ケース(6本)限り"
+  },
+  {
+   "id": "5be80325a4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "きはだまぐろ冊(刺身用・解凍)",
+   "item_key": "きはだまぐろ",
+   "category": "魚",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "25247680c7",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "日本ハム シャウエッセン 2コ束",
+   "item_key": "ウインナーソーセージ",
+   "category": "肉",
+   "price": 368.0,
+   "price_tax": 397.0,
+   "quantity": "107g×2",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "23afebb364",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ミニトマト(大パック)",
+   "item_key": "ミニトマト",
+   "category": "野菜",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "180g入1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "d2c1908952",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "なす",
+   "item_key": "なす",
+   "category": "野菜",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "5本入1袋",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "83f7baac18",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "きゅうり",
+   "item_key": "きゅうり",
+   "category": "野菜",
+   "price": 69.0,
+   "price_tax": 74.0,
+   "quantity": "1本",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "b70b99e52b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "からすかれい厚切り(解凍)",
+   "item_key": "からすかれい",
+   "category": "魚",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "4309e97e10",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ブルボン アルフォート・ブランチュール",
+   "item_key": "ビスケット・クッキー",
+   "category": "菓子",
+   "price": 238.0,
+   "price_tax": 257.0,
+   "quantity": "アルフォート147g、ブランチュール16コ入 各1コ",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "37669741c6",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "バナナ",
+   "item_key": "バナナ",
+   "category": "果物",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "1カット",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "9e459cac5d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "豚肉ヒレブロック",
+   "item_key": "豚ヒレ肉",
+   "category": "肉",
+   "price": 118.0,
+   "price_tax": 127.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "7e2690ab7b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "国内産 豚肉こま切れ",
+   "item_key": "豚肉こま切れ",
+   "category": "肉",
+   "price": 128.0,
+   "price_tax": 138.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "9cdbd75379",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "花王 アタック 高活性バイオパワー 詰替",
+   "item_key": "洗濯用洗剤",
+   "category": "日用品",
+   "price": 398.0,
+   "price_tax": 437.0,
+   "quantity": "750g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様2点まで"
+  },
+  {
+   "id": "341549343b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "牛乳石鹸 ミルキィボディソープ 詰替 各種",
+   "item_key": "ボディソープ",
+   "category": "日用品",
+   "price": 158.0,
+   "price_tax": 173.0,
+   "quantity": "各360ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "3f7cec7a10",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "アンガスビーフ切りおとしとにんにくの芽炒め",
+   "item_key": "牛肉味付け肉",
+   "category": "肉",
+   "price": 128.0,
+   "price_tax": 138.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "d495e8e866",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "伊藤ハム 朝のフレッシュロースハム 4連",
+   "item_key": "ロースハム",
+   "category": "肉",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "140g入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "a01c81d8a4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "国内産合挽肉(解凍)",
+   "item_key": "合挽肉",
+   "category": "肉",
+   "price": 168.0,
+   "price_tax": 181.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "1b842711cd",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "花王 キッチン泡ハイター 付替 各種",
+   "item_key": "キッチン用漂白剤",
+   "category": "日用品",
+   "price": 258.0,
+   "price_tax": 283.0,
+   "quantity": "各400ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "61d635f9e3",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ジョンソン パイプユニッシュ",
+   "item_key": "パイプクリーナー",
+   "category": "日用品",
+   "price": 178.0,
+   "price_tax": 195.0,
+   "quantity": "800g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "fe02b61b97",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "伊藤園 ビタミン野菜、1日分の野菜",
+   "item_key": "野菜ジュース",
+   "category": "飲料",
+   "price": 798.0,
+   "price_tax": 861.0,
+   "quantity": "各200ml×12",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "939e81ed41",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "マルちゃん あったかごはん",
+   "item_key": "パックご飯",
+   "category": "米",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "200g×3食パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各日1点限り"
+  },
+  {
+   "id": "e2ca921821",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "カゴメ トマトケチャップ",
+   "item_key": "ケチャップ",
+   "category": "加工食品",
+   "price": 159.0,
+   "price_tax": 171.0,
+   "quantity": "500g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各日各1点限り"
+  },
+  {
+   "id": "7a6fae9713",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "カゴメ ウスターソース、とんかつソース",
+   "item_key": "ソース",
+   "category": "加工食品",
+   "price": 159.0,
+   "price_tax": 171.0,
+   "quantity": "各500ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": "お1人様各日各1点限り"
+  },
+  {
+   "id": "03437a4ea8",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "蓬莱本館 ジャンボ焼売",
+   "item_key": "焼売",
+   "category": "惣菜",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "4コ+2コ増量",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "6cd95a0e8f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "蓬莱本館 フレッシュ豚まん",
+   "item_key": "中華まん",
+   "category": "惣菜",
+   "price": 438.0,
+   "price_tax": 473.0,
+   "quantity": "3コ+1コ増量",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "56e6a675c4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "おはなはん お好み焼",
+   "item_key": "お好み焼",
+   "category": "日配",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "2人前",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "b6c10d2713",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "明治 コーンソフト",
+   "item_key": "マーガリン",
+   "category": "日配",
+   "price": 218.0,
+   "price_tax": 235.0,
+   "quantity": "300g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "0cdafadef6",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ヤマザキ ランチパック(たまご・メンチカツ)",
+   "item_key": "菓子パン",
+   "category": "日配",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "各2コ入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "f022bfc26b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "フジパン 本仕込",
+   "item_key": "食パン",
+   "category": "日配",
+   "price": 109.0,
+   "price_tax": 117.0,
+   "quantity": "5枚・6枚",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "a526867986",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ヤクルト ヤクルト、糖質・カロリー50%オフ",
+   "item_key": "乳酸菌飲料",
+   "category": "日配",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "各65ml×10",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "b304212eef",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ヒロタ チョコレートシュークリーム、カスタードシュークリーム",
+   "item_key": "シュークリーム",
+   "category": "日配",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "各4コ入",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-18",
+   "condition": null
+  },
+  {
+   "id": "b3d0d8cbbd",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ブルボン アルフォート",
+   "item_key": "クッキー",
+   "category": "菓子",
+   "price": 238.0,
+   "price_tax": 257.0,
+   "quantity": null,
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "d69d1681c4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "パイプユニッシュ",
+   "item_key": "洗剤",
+   "category": "日用品",
+   "price": 178.0,
+   "price_tax": 195.0,
+   "quantity": null,
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "8482b0e87b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "長野産他 巨峰(種あり)",
+   "item_key": "ぶどう",
+   "category": "果物",
+   "price": 498.0,
+   "price_tax": 537.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "6e8ce33ae4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ニッポンハム チキチキボーン 骨なし フライドチキン 大容量パック",
+   "item_key": "冷凍チキン",
+   "category": "加工食品",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "400g入(100g当り約100円)",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様1点限り 先着30名様"
+  },
+  {
+   "id": "5f8ce66c67",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "アメリカ産 豚肉ロース「極」うす切り",
+   "item_key": "豚ロース",
+   "category": "肉",
+   "price": 138.0,
+   "price_tax": 149.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "a698c803cf",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "国内産 豚挽肉(解凍)",
+   "item_key": "豚ひき肉",
+   "category": "肉",
+   "price": 118.0,
+   "price_tax": 127.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "be978c7373",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ジョンソン 洗たく槽カビキラー",
+   "item_key": "洗濯槽クリーナー",
+   "category": "日用品",
+   "price": 198.0,
+   "price_tax": 217.0,
+   "quantity": "550g",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "d41a41ca6a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "フィリピン産 スウィーティオバナナ",
+   "item_key": "バナナ",
+   "category": "果物",
+   "price": 238.0,
+   "price_tax": 257.0,
+   "quantity": "1カット",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "f8d69b50f7",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "伊藤ハム アルトバイエルン 大袋",
+   "item_key": "ウインナー",
+   "category": "日配",
+   "price": 598.0,
+   "price_tax": 645.0,
+   "quantity": "468g入(100g当り約128円)",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "ライフのカード会員様 +100ポイント"
+  },
+  {
+   "id": "0881623865",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "明治 おいしい牛乳",
+   "item_key": "牛乳",
+   "category": "日配",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "900ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": null
+  },
+  {
+   "id": "0e663120c3",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "サンスター ガム・デンタルリンス 各種",
+   "item_key": "マウスウォッシュ",
+   "category": "日用品",
+   "price": 698.0,
+   "price_tax": 767.0,
+   "quantity": "960ml",
+   "date_from": "2026-10-17",
+   "date_to": "2026-10-20",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "f7eee6af18",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "石川・長野産他 そのまま使える里山ぶなしめじ",
+   "item_key": "ぶなしめじ",
+   "category": "野菜",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "90g入1袋",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市"
+  },
+  {
+   "id": "71b0672bec",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "カンボジア産 バナナ",
+   "item_key": "バナナ",
+   "category": "果物",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "1カット",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市"
+  },
+  {
+   "id": "cace2fd3b5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "大阪産 ブロッコリースプラウト Wパック",
+   "item_key": "ブロッコリースプラウト",
+   "category": "野菜",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市"
+  },
+  {
+   "id": "ac9e9d5b5e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "北海道産 洋にんじん",
+   "item_key": "にんじん",
+   "category": "野菜",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "Sサイズ4本入1袋",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市"
+  },
+  {
+   "id": "e8da0ced45",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "カナダ産 豚肉こま切れ",
+   "item_key": "豚こま",
+   "category": "肉",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市"
+  },
+  {
+   "id": "0808fd5a85",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "ミツカン 穀物酢",
+   "item_key": "酢",
+   "category": "加工食品",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "500ml",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市 お1人様各1点限り"
+  },
+  {
+   "id": "d5ad2239f5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "シマヤ こんぶだしの素",
+   "item_key": "だしの素",
+   "category": "加工食品",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "8g×7本",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市 お1人様各1点限り"
+  },
+  {
+   "id": "667a85a1f0",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "スマイルライフ いきいき乳酸菌",
+   "item_key": "乳酸菌飲料",
+   "category": "日配",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "65ml×8",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市"
+  },
+  {
+   "id": "611baf0453",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "スマイルライフ とろ〜りなめらかヨーグルト",
+   "item_key": "ヨーグルト",
+   "category": "日配",
+   "price": 98.0,
+   "price_tax": 105.0,
+   "quantity": "68g×4",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市"
+  },
+  {
+   "id": "5e4c186f55",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "スマイルライフ 超極厚フローリングウェットシート",
+   "item_key": "ウェットシート",
+   "category": "日用品",
+   "price": 98.0,
+   "price_tax": 107.0,
+   "quantity": "20枚",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "月曜市 お1人様2点まで"
+  },
+  {
+   "id": "9c9122ac6d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "S&B ゴールデンカレー (中辛・辛口)",
+   "item_key": "カレールー",
+   "category": "加工食品",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "各198g",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "お1人様各1点限り Curry"
+  },
+  {
+   "id": "a24049fbb6",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "S&B 濃いシチュー クリーム",
+   "item_key": "シチュールー",
+   "category": "加工食品",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "168g",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "お1人様各1点限り"
+  },
+  {
+   "id": "bb38d47f7c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "骨取り塩さば 小",
+   "item_key": "塩さば",
+   "category": "魚",
+   "price": 498.0,
+   "price_tax": 537.0,
+   "quantity": "3枚入",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": null
+  },
+  {
+   "id": "ef2870c602",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "日清 チキンラーメン どんぶり",
+   "item_key": "カップ麺",
+   "category": "加工食品",
+   "price": 119.0,
+   "price_tax": 128.0,
+   "quantity": "各1食",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "お1人様各6点まで"
+  },
+  {
+   "id": "deb979c5cd",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "塩麹で漬け込んだ国産どりのチキンカツ",
+   "item_key": "チキンカツ",
+   "category": "惣菜",
+   "price": 390.0,
+   "price_tax": 421.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": null
+  },
+  {
+   "id": "34048d0154",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "大王製紙 エリス 新・素肌感 多い昼〜ふつうの日 羽なし",
+   "item_key": "生理用ナプキン",
+   "category": "日用品",
+   "price": 248.0,
+   "price_tax": 272.0,
+   "quantity": "26枚×2コパック",
+   "date_from": "2026-10-19",
+   "date_to": "2026-10-19",
+   "condition": "お1人様計2点まで"
+  },
+  {
+   "id": "f17163a676",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "福岡産他 小松菜",
+   "item_key": "小松菜",
+   "category": "野菜",
+   "price": 138.0,
+   "price_tax": 149.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-20",
+   "date_to": "2026-10-20",
+   "condition": "開店からお昼12時まで 売り切れご免！"
+  },
+  {
+   "id": "51cc835a98",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "スマイルライフ 皮なしウインナー",
+   "item_key": "ウインナー",
+   "category": "日配",
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "272g入(100g当り約73円)",
+   "date_from": "2026-10-20",
+   "date_to": "2026-10-20",
+   "condition": "開店からお昼12時まで 売り切れご免！ お1人様1点限り 先着30名様"
+  },
+  {
+   "id": "274319a82e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "味の素 スープDELI まるごと1個分完熟トマトのスープパスタ",
+   "item_key": "スープパスタ",
+   "category": "加工食品",
+   "price": 89.0,
+   "price_tax": 96.0,
+   "quantity": "1食",
+   "date_from": "2026-10-20",
+   "date_to": "2026-10-20",
+   "condition": "開店からお昼12時まで 売り切れご免！ お1人様2点まで 先着50名様"
+  },
+  {
+   "id": "13a7e48c48",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6acfc986dbaad65a7d0f4aaa",
+   "name": "スターセレクト キッチンブリーチ",
+   "item_key": "キッチンブリーチ",
+   "category": "日用品",
+   "price": 88.0,
+   "price_tax": 96.0,
+   "quantity": "600ml",
+   "date_from": "2026-10-20",
+   "date_to": "2026-10-20",
+   "condition": "開店からお昼12時まで 売り切れご免！ お1人様2点まで"
+  },
+  {
+   "id": "cd03470e96",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "熊本・佐賀産 みかん(小粒)",
+   "item_key": "みかん",
+   "category": "果物",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "b0acd8b834",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "山梨・長野産他 シャインマスカット",
+   "item_key": "シャインマスカット",
+   "category": "果物",
+   "price": 798.0,
+   "price_tax": 861.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "9ab292cc60",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "北海道・茨城産他 ミニトマト(大パック)",
+   "item_key": "ミニトマト",
+   "category": "野菜",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "180g入1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "bde4f1346a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "群馬・宮崎産他 きゅうり",
+   "item_key": "きゅうり",
+   "category": "野菜",
+   "price": 69.0,
+   "price_tax": 74.0,
+   "quantity": "1本",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "b3ebbe8383",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "北海道産他 トマト",
+   "item_key": "トマト",
+   "category": "野菜",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "79bfb6a339",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "ゼスプリ サンゴールドキウイ、グリーンキウイ",
+   "item_key": "キウイ",
+   "category": "果物",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "各Lサイズ1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "d87aca788d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "和歌山・奈良産 種なし柿",
+   "item_key": "柿",
+   "category": "果物",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "2Lサイズ1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "4cb1ed06b2",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "フィリピン産 バナナ",
+   "item_key": "バナナ",
+   "category": "果物",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "1カット",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "74edc51564",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "福岡産他 小松菜",
+   "item_key": "小松菜",
+   "category": "野菜",
+   "price": 138.0,
+   "price_tax": 149.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "6a9bbe9b5a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "三重産他 有機栽培生しいたけ",
+   "item_key": "生しいたけ",
+   "category": "野菜",
+   "price": 138.0,
+   "price_tax": 149.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "c383ac49d9",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "鹿児島産他 オクラ",
+   "item_key": "オクラ",
+   "category": "野菜",
+   "price": 138.0,
+   "price_tax": 149.0,
+   "quantity": "1ネット",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "e7169020bc",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "ネスカフェ エクセラ つめかえ用袋",
+   "item_key": "インスタントコーヒー",
+   "category": "加工食品",
+   "price": 598.0,
+   "price_tax": 645.0,
+   "quantity": "100g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様1点限り"
+  },
+  {
+   "id": "0810854f3a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "花王 ニュービーズ",
+   "item_key": "洗濯洗剤",
+   "category": "日用品",
+   "price": 348.0,
+   "price_tax": 382.0,
+   "quantity": "800g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様2点まで"
+  },
+  {
+   "id": "e3a7eede2e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "花王 ハミング 素肌おもい 詰替 各種",
+   "item_key": "柔軟剤",
+   "category": "日用品",
+   "price": 198.0,
+   "price_tax": 217.0,
+   "quantity": "480ml",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "b8008ee914",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "ユニリーバ ダヴ 詰替 各種 (シャンプー、コンディショナー、ボディウォッシュ)",
+   "item_key": "シャンプー",
+   "category": "日用品",
+   "price": 198.0,
+   "price_tax": 217.0,
+   "quantity": "各300g~350g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "6311aadeaf",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "エースコック スープはるさめ (かきたま・担担味・ワンタン) 各1食",
+   "item_key": "春雨スープ",
+   "category": "加工食品",
+   "price": 119.0,
+   "price_tax": 128.0,
+   "quantity": "各1食",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "6ee57393fd",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "日の出 料理酒、新味料",
+   "item_key": "料理酒・みりん",
+   "category": "加工食品",
+   "price": 159.0,
+   "price_tax": 171.0,
+   "quantity": "各1000ml",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各1点限り"
+  },
+  {
+   "id": "48d706522b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "フジパン ネオバターロール、ネオレーズンバターロール",
+   "item_key": "ロールパン",
+   "category": "日配",
+   "price": 149.0,
+   "price_tax": 160.0,
+   "quantity": "各6コ入",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "ed3a6195a1",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "カナダ産 豚肉こま切れ",
+   "item_key": "豚こま切落し",
+   "category": "肉",
+   "price": 108.0,
+   "price_tax": 116.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "324e0ba69d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "北海道産 長いも",
+   "item_key": "長いも",
+   "category": "野菜",
+   "price": 79.0,
+   "price_tax": 85.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "3ea808ce4d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "大分県産 豊後健康味どりもも角切り",
+   "item_key": "鶏もも",
+   "category": "肉",
+   "price": 178.0,
+   "price_tax": 192.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "15f4c82889",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "スマイルライフ カフェラテ、カフェラテ ノンスイート",
+   "item_key": "チルドコーヒー",
+   "category": "飲料",
+   "price": 89.0,
+   "price_tax": 96.0,
+   "quantity": "各280ml",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "b652e66d5b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "スターセレクト お徳用ウインナー",
+   "item_key": "ウインナー",
+   "category": "日配",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "365g入",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "3291aa96f5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "花王 クリアクリーン スタンディング 各種",
+   "item_key": "歯磨き粉",
+   "category": "日用品",
+   "price": 158.0,
+   "price_tax": 173.0,
+   "quantity": "120g",
+   "date_from": "2026-10-16",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各2点まで"
+  },
+  {
+   "id": "4740d4181c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "名城 中華楼 二人前/ケーエスフーズ 絹厚家族 6コ入/ヤマザキ おいしさ宣言 ホワイトデニッシュショコラ、ミニスナックゴールド、まるでソーセージ 各1コ",
+   "item_key": "日配・パン各種",
+   "category": "日配",
+   "price": 179.0,
+   "price_tax": 193.0,
+   "quantity": "各1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "よりどり3コで500円(税込540円)"
+  },
+  {
+   "id": "77abb0ac8a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fb",
+   "name": "フジパン 黒コッペ、銀チョコW 各1コ/森永製菓 白い板チョコアイス 1コ",
+   "item_key": "菓子パン・アイス",
+   "category": "日配",
+   "price": 119.0,
+   "price_tax": 128.0,
+   "quantity": "各1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "よりどり2コで218円(税込235円)"
+  },
+  {
+   "id": "d1d9369b33",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "生さんま",
+   "item_key": "さんま",
+   "category": "魚",
+   "price": 250.0,
+   "price_tax": 270.0,
+   "quantity": "1尾入",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "ff4fb782fc",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "生さんま",
+   "item_key": "さんま",
+   "category": "魚",
+   "price": 498.0,
+   "price_tax": 537.0,
+   "quantity": "2尾入",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "278d91a680",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "お魚 組み合わせ自由 (釜揚げしらす/スマイルライフ辛子明太子/国産骨取り塩さば/MEL認証炭火焼かつおたたき/久世福商店毎日だし使用!塩銀鮭など)",
+   "item_key": "魚介詰合せ",
+   "category": "魚",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "f471d154e8",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "お魚 組み合わせ自由 (釜揚げしらす/スマイルライフ辛子明太子/国産骨取り塩さば/MEL認証炭火焼かつおたたき/久世福商店毎日だし使用!塩銀鮭など)",
+   "item_key": "魚介詰合せ",
+   "category": "魚",
+   "price": 1000.0,
+   "price_tax": 1080.0,
+   "quantity": "よりどり3パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "5fda824131",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "うを鮨 彩り豊かうを鮨盛合せ(恵)",
+   "item_key": "寿司盛合せ",
+   "category": "惣菜",
+   "price": 990.0,
+   "price_tax": 1069.0,
+   "quantity": "8貫",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "c5544c2787",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "チリ産 サーモントラウト冊(刺身用・解凍・養殖)",
+   "item_key": "サーモントラウト",
+   "category": "魚",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "1bfbc947c1",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "個食鍋各種",
+   "item_key": "個食鍋",
+   "category": "惣菜",
+   "price": 498.0,
+   "price_tax": 537.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "7f23a5aee4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "個食鍋各種",
+   "item_key": "個食鍋",
+   "category": "惣菜",
+   "price": 880.0,
+   "price_tax": 950.0,
+   "quantity": "よりどり2パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "ec41c06f15",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "国内産 牛肉モモ各種",
+   "item_key": "牛モモ",
+   "category": "肉",
+   "price": 428.0,
+   "price_tax": 462.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "d2670259bd",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "国内産 豚肉こま切れ",
+   "item_key": "豚こま切落し",
+   "category": "肉",
+   "price": 148.0,
+   "price_tax": 159.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "9e60fd6087",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "国内産 牛肉こま切れ(うす切りカット)",
+   "item_key": "牛こま切れ",
+   "category": "肉",
+   "price": 780.0,
+   "price_tax": 842.0,
+   "quantity": "225g入(100g当り347円)",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "bc69f15da9",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "国内産 牛肉すじ(解凍品)",
+   "item_key": "牛すじ",
+   "category": "肉",
+   "price": 308.0,
+   "price_tax": 332.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "d318f9309c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "国内産 若どりもも角切り",
+   "item_key": "鶏もも",
+   "category": "肉",
+   "price": 158.0,
+   "price_tax": 170.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "1836d80e48",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "丸大食品 燻製屋ウインナー 2コ束",
+   "item_key": "ウインナーソーセージ",
+   "category": "加工食品",
+   "price": 268.0,
+   "price_tax": 289.0,
+   "quantity": "90g×2(100g当り約149円)",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "8c211c749a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "スターセレクト ロースハム4連",
+   "item_key": "ロースハム",
+   "category": "加工食品",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "34g×4(100g当り約190円)",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "3afdb39ca3",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "スターセレクト ハーフベーコン4連",
+   "item_key": "ベーコン",
+   "category": "加工食品",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "32g×4(100g当り約202円)",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "5f8a90ce9d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "さかな屋自慢! 彩り海鮮ちらし寿司",
+   "item_key": "ちらし寿司",
+   "category": "惣菜",
+   "price": 599.0,
+   "price_tax": 646.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "f263f3b2cd",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "大きなサラダえび (生食用)",
+   "item_key": "えび",
+   "category": "魚",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "3ff91f34c5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "2パックよりどり",
+   "item_key": "肉よりどり",
+   "category": "肉",
+   "price": 880.0,
+   "price_tax": 950.0,
+   "quantity": "2パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "このシールが目印です"
+  },
+  {
+   "id": "8a339e5b45",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "国内産 牛肉モモ各種",
+   "item_key": "牛肉モモ",
+   "category": "肉",
+   "price": 428.0,
+   "price_tax": 462.0,
+   "quantity": "100g当り",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "6440b40a16",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "国内産 牛こま切れ (うす切りカット)",
+   "item_key": "牛こま切落し",
+   "category": "肉",
+   "price": 780.0,
+   "price_tax": 842.0,
+   "quantity": "225g入",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "745435f7a4",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "ロースハム4連・ベーコン4連",
+   "item_key": "ハム",
+   "category": "加工食品",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "各",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "7faf144c1f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "レモン果汁香る! 海老のマヨソース",
+   "item_key": "エビマヨ",
+   "category": "惣菜",
+   "price": 499.0,
+   "price_tax": 538.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "0d6de925ee",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "1/2日分の野菜が摂れる! 海鮮オイスター丼",
+   "item_key": "中華丼",
+   "category": "惣菜",
+   "price": 599.0,
+   "price_tax": 646.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "6df45b1046",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "小麦の郷 笑顔のクリームパン",
+   "item_key": "菓子パン",
+   "category": "惣菜",
+   "price": 180.0,
+   "price_tax": 194.0,
+   "quantity": "1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "11時より販売/一部店舗限定"
+  },
+  {
+   "id": "2a631186c5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "キリン 午後の紅茶 ミルクティー",
+   "item_key": "紅茶",
+   "category": "飲料",
+   "price": 79.0,
+   "price_tax": 85.0,
+   "quantity": "500ml",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "ライフのカード会員様ボーナスポイント+10"
+  },
+  {
+   "id": "6ca961ce07",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "キリン 生茶",
+   "item_key": "緑茶",
+   "category": "飲料",
+   "price": 79.0,
+   "price_tax": 85.0,
+   "quantity": "525ml",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "ライフのカード会員様ボーナスポイント+10"
+  },
+  {
+   "id": "b1f06465de",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "ライフプレミアム 長崎かすてら 阿波和三盆糖使用",
+   "item_key": "カステラ",
+   "category": "菓子",
+   "price": 598.0,
+   "price_tax": 645.0,
+   "quantity": "6切入",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "4036e8d690",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "花よつば ベビーあんドーナツ",
+   "item_key": "ドーナツ",
+   "category": "菓子",
+   "price": 199.0,
+   "price_tax": 214.0,
+   "quantity": "6コ入",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "f3c6aa689d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "ヤマザキ 生クリームロール",
+   "item_key": "ロールケーキ",
+   "category": "菓子",
+   "price": 328.0,
+   "price_tax": 354.0,
+   "quantity": "4枚入",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "6015379198",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "メキシコ産 アボカド Mサイズ",
+   "item_key": "アボカド",
+   "category": "野菜",
+   "price": 138.0,
+   "price_tax": 149.0,
+   "quantity": "1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "778385bfb0",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "旬の切花",
+   "item_key": "切花",
+   "category": "その他",
+   "price": 100.0,
+   "price_tax": 110.0,
+   "quantity": "1本",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "ee033bdf2d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "丸大食品 燻製屋ウインナー2コ束",
+   "item_key": "ウインナー",
+   "category": "肉",
+   "price": 268.0,
+   "price_tax": 289.0,
+   "quantity": "90g×2",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "84182f6bfa",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "日清 どん兵衛 (天ぷらそば・きつねうどん・肉うどん)",
+   "item_key": "カップ麺",
+   "category": "加工食品",
+   "price": 139.0,
+   "price_tax": 150.0,
+   "quantity": "各1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "c75d351aa7",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "日清 焼そばU.F.O.",
+   "item_key": "カップ焼きそば",
+   "category": "加工食品",
+   "price": 139.0,
+   "price_tax": 150.0,
+   "quantity": "各1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "be3801c824",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "日清 どん兵衛・焼そばU.F.O. よりどり3コ",
+   "item_key": "カップ麺",
+   "category": "加工食品",
+   "price": 405.0,
+   "price_tax": 437.0,
+   "quantity": "3コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "71ca46147e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "エバラ 黄金の味 (甘口・中辛)",
+   "item_key": "焼肉のたれ",
+   "category": "加工食品",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "各360g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "aad57fd60d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "ミツカン 〆まで美味しい ごま豆乳鍋つゆ",
+   "item_key": "鍋つゆ",
+   "category": "加工食品",
+   "price": 278.0,
+   "price_tax": 300.0,
+   "quantity": "750g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "ライフのカード会員様 ボーナスポイント20ポイント"
+  },
+  {
+   "id": "263eb1dd4a",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "ミツカン 味ぽん",
+   "item_key": "ポン酢",
+   "category": "加工食品",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "500ml",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "d122bb6b10",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "UCC ゴールドスペシャル (スペシャルブレンド・リッチブレンド)",
+   "item_key": "レギュラーコーヒー",
+   "category": "飲料",
+   "price": 598.0,
+   "price_tax": 645.0,
+   "quantity": "各240g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "1fbd0424b8",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "アサヒ スーパードライ",
+   "item_key": "ビール",
+   "category": "酒",
+   "price": 1038.0,
+   "price_tax": 1141.0,
+   "quantity": "350ml×6缶パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "ライフのカード会員様 ボーナスポイント40ポイント"
+  },
+  {
+   "id": "d0a06cac63",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "サントリー 金麦 豊潤",
+   "item_key": "新ジャンル",
+   "category": "酒",
+   "price": 878.0,
+   "price_tax": 965.0,
+   "quantity": "350ml×6缶パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "a9d794b70d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "サントリー -196 キウイ",
+   "item_key": "チューハイ",
+   "category": "酒",
+   "price": 119.0,
+   "price_tax": 130.0,
+   "quantity": "350ml",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "354bb108df",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "スコッティ ティシューペーパー",
+   "item_key": "ティッシュ",
+   "category": "日用品",
+   "price": 368.0,
+   "price_tax": 404.0,
+   "quantity": "1箱(200組)×5箱パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各日2点まで"
+  },
+  {
+   "id": "b4981b4fc0",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "花王 ニュービーズ 詰替 超特大 各種",
+   "item_key": "洗濯洗剤",
+   "category": "日用品",
+   "price": 398.0,
+   "price_tax": 437.0,
+   "quantity": "880g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各日2点まで"
+  },
+  {
+   "id": "17e6006ae5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "花王 キュキュット 詰替 特大 各種",
+   "item_key": "食器用洗剤",
+   "category": "日用品",
+   "price": 298.0,
+   "price_tax": 327.0,
+   "quantity": "700ml",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各日2点まで"
+  },
+  {
+   "id": "199e39597d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "ユニリーバ ラックス スーパーリッチシャイン ポンプペア 各種",
+   "item_key": "シャンプー",
+   "category": "日用品",
+   "price": 698.0,
+   "price_tax": 767.0,
+   "quantity": "400g+400g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "ca74737213",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "花王 バブ 各種",
+   "item_key": "入浴剤",
+   "category": "日用品",
+   "price": 428.0,
+   "price_tax": 470.0,
+   "quantity": "12錠入",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "4db6a990dc",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "クレハ クレラップ ミニ",
+   "item_key": "ラップ",
+   "category": "日用品",
+   "price": 348.0,
+   "price_tax": 382.0,
+   "quantity": "22cm×50m",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各日2点まで"
+  },
+  {
+   "id": "af62122083",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "クレハ クレラップ",
+   "item_key": "ラップ",
+   "category": "日用品",
+   "price": 448.0,
+   "price_tax": 492.0,
+   "quantity": "30cm×50m",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各日2点まで"
+  },
+  {
+   "id": "47da460270",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "笑顔のクリームパン",
+   "item_key": "クリームパン",
+   "category": "パン",
+   "price": 180.0,
+   "price_tax": 194.0,
+   "quantity": "1コ",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "fefdf5c2d1",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "得々にぎり盛り合わせ 各種",
+   "item_key": "寿司盛り合わせ",
+   "category": "惣菜",
+   "price": 699.0,
+   "price_tax": 754.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "0f2be13c00",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "ミツカン 味ぽん",
+   "item_key": "味ぽん",
+   "category": "加工食品",
+   "price": 258.0,
+   "price_tax": 278.0,
+   "quantity": "500ml",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "a28aec9298",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "明治 きのこのたけのこの袋 みんなのブラック",
+   "item_key": "チョコレート菓子",
+   "category": "菓子",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "92g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "新商品"
+  },
+  {
+   "id": "f382d986b9",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "新潟県産こしひかり",
+   "item_key": "精米",
+   "category": "米",
+   "price": 2980.0,
+   "price_tax": 3218.0,
+   "quantity": "5kg",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "新米入荷"
+  },
+  {
+   "id": "51df5e137b",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "森永乳業 焼プリン",
+   "item_key": "焼プリン",
+   "category": "菓子",
+   "price": 129.0,
+   "price_tax": 139.0,
+   "quantity": "140g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "11598a6176",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "森永乳業 ビヒダス(プレーンヨーグルト、プレーンヨーグルト脂肪0)",
+   "item_key": "ヨーグルト",
+   "category": "日配",
+   "price": 149.0,
+   "price_tax": 160.0,
+   "quantity": "各400g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "333c48c884",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "森永乳業 クラフト モッツァレラ",
+   "item_key": "モッツァレラチーズ",
+   "category": "日配",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "100g",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": null
+  },
+  {
+   "id": "73c7c48484",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "アサヒ アサヒゼロ カロリーゼロ",
+   "item_key": "ノンアルコールビール",
+   "category": "飲料",
+   "price": 798.0,
+   "price_tax": 861.0,
+   "quantity": "350ml×6缶パック",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "新商品"
+  },
+  {
+   "id": "bca8b415d5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac9e5e90bcb655f9b5a84fc",
+   "name": "花王 キュキュット 詰替 特大 各種",
+   "item_key": "台所用洗剤",
+   "category": "日用品",
+   "price": 298.0,
+   "price_tax": 327.0,
+   "quantity": "700ml",
+   "date_from": "2026-10-14",
+   "date_to": "2026-10-16",
+   "condition": "お1人様各日各2点まで(キュキュットハンドマイルドは除きます)"
+  },
+  {
+   "id": "c38cb81027",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "カトキチ さぬきうどん",
+   "item_key": "さぬきうどん",
+   "category": "加工食品",
+   "price": 258.0,
+   "price_tax": 278.64,
+   "quantity": "5食入",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "74474f2fd1",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "ヤマサ蒲鉾 サラダマリアージュ",
+   "item_key": "かに風味かまぼこ",
+   "category": "日配",
+   "price": 218.0,
+   "price_tax": 235.44,
+   "quantity": "120g",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "82cc64bc68",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "イシイ ミートボール",
+   "item_key": "ミートボール",
+   "category": "日配",
+   "price": 398.0,
+   "price_tax": 429.84,
+   "quantity": "3コ束",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": "ライフアプリボーナスポイント+10ポイント"
+  },
+  {
+   "id": "063b67f172",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "東海漬物 こくうま熟うま辛キムチ",
+   "item_key": "キムチ",
+   "category": "日配",
+   "price": 328.0,
+   "price_tax": 354.24,
+   "quantity": "300g",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": "ライフアプリボーナスポイント+10ポイント"
+  },
+  {
+   "id": "1b7261d0be",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "名城 中華楼 ゆで太めん 二人前",
+   "item_key": "中華麺",
+   "category": "加工食品",
+   "price": 1.0,
+   "price_tax": null,
+   "quantity": "二人前",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": "ライフアプリボーナスポイント+10ポイント"
+  },
+  {
+   "id": "8a48d901b8",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "明治 チューブでバター1/3",
+   "item_key": "バター調製品",
+   "category": "日配",
+   "price": 258.0,
+   "price_tax": 278.64,
+   "quantity": "150g",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": "ライフアプリボーナスポイント+10ポイント"
+  },
+  {
+   "id": "80eff3e5d5",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "オハヨー カスタードプリン",
+   "item_key": "プリン",
+   "category": "日配",
+   "price": 179.0,
+   "price_tax": 193.32,
+   "quantity": "68g×4個",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": "ライフアプリボーナスポイント+10ポイント"
+  },
+  {
+   "id": "7da392bfdc",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "名城の中華楼",
+   "item_key": "中華麺",
+   "category": "日配",
+   "price": 139.0,
+   "price_tax": 150.12,
+   "quantity": "二人前",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "51ea643f90",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "Kiri キリクリーミーポーション",
+   "item_key": "チーズ",
+   "category": "日配",
+   "price": 428.0,
+   "price_tax": 462.24,
+   "quantity": "10個入",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": "ライフアプリボーナスポイント+10ポイント"
+  },
+  {
+   "id": "d273ace39e",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "雪印メグミルク 雪印コーヒー",
+   "item_key": "コーヒー飲料",
+   "category": "飲料",
+   "price": 159.0,
+   "price_tax": 171.72,
+   "quantity": "1000ml",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": "ライフアプリボーナスポイント+10ポイント"
+  },
+  {
+   "id": "4ecbd04064",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ac089fe0bcb655f9b5a5482",
+   "name": "井村屋 あずきバー",
+   "item_key": "アイスクリーム",
+   "category": "菓子",
+   "price": 238.0,
+   "price_tax": 257.04,
+   "quantity": "6本入",
+   "date_from": "2026-10-08",
+   "date_to": "2026-10-31",
+   "condition": "ライフアプリボーナスポイント+10ポイント"
+  },
+  {
+   "id": "f7dbdb2b42",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "BIO-RAL グルテンフリーパンケーキミックス",
+   "item_key": "パンケーキミックス",
+   "category": "加工食品",
+   "price": 328.0,
+   "price_tax": 354.0,
+   "quantity": "200g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "a646023505",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ライフプレミアム とろける牛肉の具だくさんビーフシチュー",
+   "item_key": "ビーフシチュー",
+   "category": "加工食品",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "190g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "9dfc22064c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ライフプレミアム 国産粗挽き牛肉がたっぷり入ったボロネーゼ",
+   "item_key": "パスタソース",
+   "category": "加工食品",
+   "price": 298.0,
+   "price_tax": 321.0,
+   "quantity": "140g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "fccb9ebbb3",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ビオラル 長期熟成有機みそ",
+   "item_key": "味噌",
+   "category": "加工食品",
+   "price": 548.0,
+   "price_tax": 591.0,
+   "quantity": "750g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "1e9e4c870f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ビオラル お好み焼き いかえび玉",
+   "item_key": "冷凍お好み焼き",
+   "category": "惣菜",
+   "price": 398.0,
+   "price_tax": 429.0,
+   "quantity": "1枚入",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "a03864a5f6",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ビオラル しぼりたてミルクバー いちご",
+   "item_key": "アイスバー",
+   "category": "菓子",
+   "price": 438.0,
+   "price_tax": 473.0,
+   "quantity": "6本入",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "9dd9c42bdb",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ビオラル 鳥取県産 砂丘らっきょう ピリ辛",
+   "item_key": "らっきょう",
+   "category": "加工食品",
+   "price": 328.0,
+   "price_tax": 354.0,
+   "quantity": "70g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "bf5b568575",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ビオラル 1日分のカルシウムが摂れるフィッシュソーセージ",
+   "item_key": "魚肉ソーセージ",
+   "category": "加工食品",
+   "price": 278.0,
+   "price_tax": 300.0,
+   "quantity": "55g×4本",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "8635dc2b63",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ライフプレミアム カレーうどんの素",
+   "item_key": "カレーうどんの素",
+   "category": "加工食品",
+   "price": 328.0,
+   "price_tax": 354.0,
+   "quantity": "270g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "397ccd6696",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "ライフプレミアム ごま油の風味が香る 焼肉のたれ",
+   "item_key": "焼肉のたれ",
+   "category": "加工食品",
+   "price": 358.0,
+   "price_tax": 386.0,
+   "quantity": "245g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "8c2ba1a76c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "熟成さわら西京漬",
+   "item_key": "さわら西京漬",
+   "category": "魚",
+   "price": 498.0,
+   "price_tax": 537.0,
+   "quantity": "2切",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "608b098c3c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "スマイルライフ お徳用あたりめ",
+   "item_key": "あたりめ",
+   "category": "菓子",
+   "price": 518.0,
+   "price_tax": 559.0,
+   "quantity": "47g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "c47adb70c9",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc1",
+   "name": "スマイルライフ チーズ鱈",
+   "item_key": "チーズ鱈",
+   "category": "菓子",
+   "price": 338.0,
+   "price_tax": 365.0,
+   "quantity": "73g",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "bd6e95f55d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "具がぎっしり詰まったライフ自慢のねぎまぐろ中巻",
+   "item_key": "ねぎまぐろ中巻",
+   "category": "惣菜",
+   "price": 499.0,
+   "price_tax": 538.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "aaa8029f9f",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "揚げごぼうとチキンの甘辛和え弁当",
+   "item_key": "弁当",
+   "category": "惣菜",
+   "price": 599.0,
+   "price_tax": 646.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "02bf46ab65",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "ロールパン",
+   "item_key": "ロールパン",
+   "category": "パン",
+   "price": 250.0,
+   "price_tax": null,
+   "quantity": "unrecognizable",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "ライフのカード会員様+10ポイント"
+  },
+  {
+   "id": "e95542bddc",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "メープル香るなると金時いもパン",
+   "item_key": "菓子パン",
+   "category": "パン",
+   "price": 160.0,
+   "price_tax": null,
+   "quantity": "1個",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "08381d496d",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "五目あんかけ焼きそば",
+   "item_key": "五目あんかけ焼きそば",
+   "category": "惣菜",
+   "price": 499.0,
+   "price_tax": 538.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "6aa50e206c",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "自社製つくねと蓮根の甘辛揚げ(国産鶏使用)",
+   "item_key": "つくねと蓮根の甘辛揚げ",
+   "category": "惣菜",
+   "price": 499.0,
+   "price_tax": 538.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "4095460608",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "粕汁(糀美人の生味噌使用)",
+   "item_key": "粕汁",
+   "category": "惣菜",
+   "price": 299.0,
+   "price_tax": 322.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "7bd65f2c46",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "境港産紅ずわいがにクリームコロッケ",
+   "item_key": "カニクリームコロッケ",
+   "category": "惣菜",
+   "price": 399.0,
+   "price_tax": 430.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "56853cdb09",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "ライフ濃厚つゆ使用! 肉じゃが",
+   "item_key": "肉じゃが",
+   "category": "惣菜",
+   "price": 399.0,
+   "price_tax": 430.0,
+   "quantity": "1パック",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": null
+  },
+  {
+   "id": "88c61a10e7",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "メープル香る なると金時いもあんパン",
+   "item_key": "あんパン",
+   "category": "パン",
+   "price": 169.0,
+   "price_tax": 182.0,
+   "quantity": "1コ",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "11時より販売"
+  },
+  {
+   "id": "db4ea70081",
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6ab920790bcb655f9b5a1dc2",
+   "name": "りんごと紅茶の スイートフランス",
+   "item_key": "フランスパン",
+   "category": "パン",
+   "price": 249.0,
+   "price_tax": 268.0,
+   "quantity": "1コ",
+   "date_from": "2026-10-01",
+   "date_to": "2026-10-31",
+   "condition": "11時より販売"
+  }
+ ]
+}</script>
+<script>
+"use strict";
+/* ---------- 保存 ---------- */
+const LS={get(k,d){try{const v=localStorage.getItem("kaimono."+k);return v==null?d:JSON.parse(v)}catch{return d}},set(k,v){localStorage.setItem("kaimono."+k,JSON.stringify(v))}};
+const STORES={
+  life_hanshin_ashiya:{name:"ライフ",sub:"阪神芦屋",c:"var(--life)"},
+  palyamato_ashiya:{name:"パル・ヤマト",sub:"芦屋",c:"var(--pal)"},
+  lopia_nishinomiya_imazu:{name:"ロピア",sub:"西宮今津",c:"var(--lopia)"},
+  other:{name:"その他",sub:"",c:"var(--other)"}
+};
+const CATS=["野菜","果物","肉","魚","惣菜","日配","パン","米","加工食品","菓子","飲料","酒","日用品","その他"];
+const WD="日月火水木金土";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),1800)}
+
+/* ---------- 日付 ---------- */
+function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function addDays(s,n){const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return ymd(d)}
+function md(s){const d=new Date(s+"T00:00:00");return `${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`}
+const TODAY=ymd(new Date());
+const DAYS=[0,1,2,3].map(n=>addDays(TODAY,n));
+
+/* ---------- 名前の揺れ ---------- */
+const SYN=[["卵","たまご","玉子","鶏卵","タマゴ"],["牛乳","ぎゅうにゅう"],["豚こま","豚こま切落し","豚小間","豚こま切り落とし","豚肉こま"],["鶏もも","鶏もも肉","若鶏もも","とりもも"],["鶏むね","鶏むね肉","若鶏むね","とりむね"],["ひき肉","挽肉","ミンチ"],["食パン","しょくぱん"],["バナナ","ばなな"],["納豆","なっとう"],["豆腐","とうふ"],["米","お米","精米","新米"],["ティッシュ","ティシュー","ティッシュペーパー"],["トイレットペーパー","トイレットロール"],["玉ねぎ","たまねぎ","玉葱"],["じゃがいも","ジャガイモ","馬鈴薯"],["にんじん","人参","洋にんじん"],["キャベツ","きゃべつ"],["白菜","はくさい"],["大根","だいこん"],["ヨーグルト","よーぐると"]];
+const norm=s=>String(s||"").normalize("NFKC").toLowerCase().replace(/\s/g,"");
+function variants(kw){const k=norm(kw);const g=SYN.find(a=>a.some(x=>norm(x)===k));return g?g.map(norm):[k]}
+/* よく買うものとの照合は一般名(item_key)で行う（「ランチパック(たまご)」が卵に混ざらないように） */
+function matches(it,kw){const vs=variants(kw);const a=norm(it.item_key);return vs.some(v=>a.includes(v))}
+function searchHit(it,q){const vs=variants(q);const a=norm(it.item_key),b=norm(it.name);return vs.some(v=>a.includes(v)||b.includes(v))}
+function keyOf(it){const k=norm(it.item_key);const g=SYN.find(a=>a.some(x=>k.includes(norm(x))));return g?norm(g[0]):k}
+
+/* ---------- 価格 ---------- */
+function taxPrice(it){if(it.price_tax!=null)return Math.round(it.price_tax);if(it.price==null)return null;const r=(it.category==="酒"||it.category==="日用品")?1.10:1.08;return Math.floor(it.price*r)}
+function unitOf(q){q=String(q||"").normalize("NFKC");let m;
+  if((m=q.match(/(\d+(?:\.\d+)?)\s*g\s*(当|あた)/)))return{u:"g",n:+m[1]};
+  if((m=q.match(/(\d+(?:\.\d+)?)\s*kg/i)))return{u:"g",n:m[1]*1000};
+  if((m=q.match(/(\d+(?:\.\d+)?)\s*g/)))return{u:"g",n:+m[1]};
+  if((m=q.match(/(\d+(?:\.\d+)?)\s*ml/i)))return{u:"ml",n:+m[1]};
+  if((m=q.match(/(\d+(?:\.\d+)?)\s*l/i)))return{u:"ml",n:m[1]*1000};
+  if((m=q.match(/(\d+)\s*(個|コ|玉|本|枚|ロール|尾|切)/)))return{u:m[2]==="コ"?"個":m[2],n:+m[1]};
+  return null}
+function unitPrice(it){const p=taxPrice(it),u=unitOf(it.quantity);if(p==null||!u||!u.n)return null;return{u:u.u,v:p/u.n}}
+function unitLabel(it){const up=unitPrice(it);if(!up)return"";if(up.u==="g")return`100gあたり¥${Math.round(up.v*100)}`;if(up.u==="ml")return`100mlあたり¥${Math.round(up.v*100)}`;const u=unitOf(it.quantity);return u.n>1?`1${up.u}あたり¥${Math.round(up.v)}`:""}
+/* 比較用の値。単位が合わないものは比べない */
+function cmpVal(a,b){const ua=unitPrice(a),ub=unitPrice(b);if(ua&&ub&&ua.u===ub.u)return[ua.v,ub.v];if(!unitOf(a.quantity)&&!unitOf(b.quantity))return[taxPrice(a),taxPrice(b)];return null}
+
+/* ---------- 状態 ---------- */
+let AUTO={flyers:[],items:[]},HIST={};
+let favs=LS.get("favs",["卵","牛乳","豚こま","鶏もも","食パン","納豆","バナナ","キャベツ"]);
+let bought=LS.get("bought",{});      // key -> [日付...]
+let uploads=LS.get("uploads",[]);    // 読み取り結果
+let st={day:0,cat:"すべて",q:"",onlyFav:false,calSel:null};
+
+function allItems(){return AUTO.items.concat(uploads).filter(i=>i.date_to>=TODAY&&(taxPrice(i)!=null||i.condition))}
+const validOn=(it,d)=>it.date_from<=d&&d<=it.date_to;
+const isFav=it=>favs.some(f=>matches(it,f));
+const buyCount=it=>(bought[keyOf(it)]||[]).length;
+
+function median(a){a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:null}
+function usual(it){ // 履歴からふだんの単価
+  const h=HIST[it.item_key];if(!h||h.length<3)return null;
+  const up=unitPrice(it);if(!up)return null;
+  const vs=h.map(r=>{const u=unitOf(r.q);return u&&u.u===up.u&&u.n?r.p/u.n:null}).filter(v=>v!=null);
+  return vs.length>=3?median(vs):null}
+
+/* 指定日より後（3日先まで）にもっと安く買える日 */
+function laterBetter(it,day,items){
+  let best=null;const key=keyOf(it);
+  for(const o of items){if(o===it||keyOf(o)!==key)continue;
+    for(const d of DAYS){if(d<=day||!validOn(o,d))continue;
+      const c=cmpVal(it,o);if(!c||c[0]==null||c[1]==null)continue;
+      if(c[1]<c[0]*0.97&&(!best||c[1]<best.v||(c[1]===best.v&&d<best.d)))best={o,d,v:c[1]}}}
+  return best}
+
+function score(it,day,items){
+  let s=0;if(isFav(it))s+=300;s+=Math.min(buyCount(it),10)*25;
+  const u=usual(it),up=unitPrice(it);if(u&&up&&up.v<u)s+=Math.round((u-up.v)/u*200);
+  if(laterBetter(it,day,items))s-=200;
+  if(it.date_to===day)s+=15;
+  return s}
+
+/* ---------- 特売タブ ---------- */
+function renderDays(){
+  const items=allItems();
+  $("#days").innerHTML=DAYS.map((d,i)=>{const dt=new Date(d+"T00:00:00");const cls=dt.getDay()===6?"sat":dt.getDay()===0?"sun":"";
+    const n=items.filter(it=>validOn(it,d)).length;
+    return `<button class="day ${cls}" aria-pressed="${i===st.day}" data-i="${i}"><small>${i===0?"今日":i===1?"明日":i+"日後"}</small><b class="dela">${dt.getDate()}</b><small>${dt.getMonth()+1}月 ${WD[dt.getDay()]}曜</small><span class="cnt">${n}品</span></button>`}).join("");
+}
+function renderCats(){
+  const items=allItems().filter(it=>validOn(it,DAYS[st.day]));
+  const have=new Set(items.map(i=>i.category));
+  const list=["すべて",...CATS.filter(c=>have.has(c))];
+  if(!list.includes(st.cat))st.cat="すべて";
+  $("#cats").innerHTML=list.map(c=>`<button class="chip" aria-pressed="${c===st.cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+}
+function dealCard(it,day,items){
+  const sto=STORES[it.store]||STORES.other;const tp=taxPrice(it);
+  const lb=laterBetter(it,day,items);const fav=isFav(it);const k=keyOf(it);
+  const boughtToday=(bought[k]||[]).includes(TODAY);
+  const u=usual(it),up=unitPrice(it);
+  const badges=[];
+  if(lb)badges.push(`<span class="b wait">${md(lb.d)}なら ${esc(STORES[lb.o.store]?.name||"")} ¥${taxPrice(lb.o)}${lb.o.quantity?"／"+esc(lb.o.quantity):""}</span>`);
+  else if(it.date_to===day)badges.push(`<span class="b last">${day===TODAY?"今日まで":md(day)+"まで"}</span>`);
+  if(!lb&&fav)badges.push(`<span class="b best">3日以内で最安</span>`);
+  if(u&&up&&up.v<u*0.95)badges.push(`<span class="b disc">いつもより${Math.round((u-up.v)/u*100)}%安い</span>`);
+  if(it.condition)badges.push(`<span class="b cond">${esc(it.condition)}</span>`);
+  const period=it.date_from===it.date_to?md(it.date_from)+"限り":`${md(it.date_from)}〜${md(it.date_to)}`;
+  return `<article class="deal ${fav?"fav":""}" style="--sc:${sto.c}">
+    <div class="name">${esc(it.name)}</div>
+    <div class="price">${tp!=null?`<span class="yen dela num">${tp.toLocaleString()}<i>円</i></span>`:`<span class="b cond">割引</span>`}<span class="unit">税込${unitLabel(it)?"・"+unitLabel(it):""}</span></div>
+    <div class="sub"><span>${esc(sto.name)}</span><span>${esc(it.quantity||"")}</span><span>${period}</span></div>
+    ${badges.length?`<div class="badges">${badges.join("")}</div>`:""}
+    <div class="actions"><button class="act" data-buy="${esc(k)}" aria-pressed="${boughtToday}">${boughtToday?"✓ 買った":"買った"}</button><button class="act star" data-fav="${esc(it.item_key)}" aria-pressed="${fav}">${fav?"★ よく買う":"☆ よく買う"}</button></div>
+  </article>`}
+function renderDeals(){
+  const day=DAYS[st.day];const items=allItems();const q=norm(st.q);
+  let list=items.filter(it=>validOn(it,day));
+  if(st.cat!=="すべて")list=list.filter(i=>i.category===st.cat);
+  if(q)list=list.filter(i=>searchHit(i,st.q));
+  if(st.onlyFav)list=list.filter(isFav);
+  const sc=new Map(list.map(i=>[i,score(i,day,items)]));
+  list.sort((a,b)=>sc.get(b)-sc.get(a)||(taxPrice(a)??9e9)-(taxPrice(b)??9e9));
+  if(!list.length){$("#dealList").innerHTML=`<div class="empty"><b>この日の特売は見つかりません</b>${st.onlyFav||q||st.cat!=="すべて"?"絞り込みを外すと他の商品が出ます。":"「読み取り」タブからチラシの画像を追加できます。"}</div>`;return}
+  const top=list.filter(i=>sc.get(i)>=100&&!laterBetter(i,day,items));
+  const wait=list.filter(i=>laterBetter(i,day,items));
+  const rest=list.filter(i=>!top.includes(i)&&!wait.includes(i));
+  let h="";
+  if(top.length)h+=`<div class="grouphead"><span>よく買うもの・おすすめ</span><span>${top.length}品</span></div>`+top.map(i=>dealCard(i,day,items)).join("");
+  if(rest.length)h+=`<div class="grouphead"><span>${md(day)}の特売</span><span>${rest.length}品</span></div>`+rest.map(i=>dealCard(i,day,items)).join("");
+  if(wait.length)h+=`<div class="grouphead"><span>急がなくていいもの（後の日の方が安い）</span><span>${wait.length}品</span></div>`+wait.map(i=>dealCard(i,day,items)).join("");
+  $("#dealList").innerHTML=h;
+}
+
+/* ---------- 買い時カレンダー ---------- */
+function cheapest(list){let b=null;for(const it of list){if(taxPrice(it)==null)continue;if(!b){b=it;continue}const c=cmpVal(it,b);const v=c?c[0]<c[1]:taxPrice(it)<taxPrice(b);if(v)b=it}return b}
+function renderCal(){
+  const items=allItems();
+  if(!favs.length){$("#cal").innerHTML=`<div class="empty"><b>よく買うものが未登録です</b>下の欄から追加してください。</div>`;$("#calDetail").innerHTML="";return}
+  let h=`<table><thead><tr><th class="item"></th>${DAYS.map((d,i)=>{const dt=new Date(d+"T00:00:00");return`<th>${i===0?"今日":WD[dt.getDay()]}<b class="dela">${dt.getDate()}</b></th>`}).join("")}</tr></thead><tbody>`;
+  for(const f of favs){
+    const per=DAYS.map(d=>cheapest(items.filter(it=>validOn(it,d)&&matches(it,f))));
+    let bi=-1,bv=null;per.forEach((it,i)=>{if(!it)return;const up=unitPrice(it);const v=up?up.v:taxPrice(it);if(bv==null||v<bv-1e-9){bv=v;bi=i}});
+    const cnt=per.filter(Boolean).length;
+    h+=`<tr><th class="item">${esc(f)}<small>${cnt?cnt+"日分の特売":"特売なし"}</small></th>`+per.map((it,i)=>{
+      if(!it)return`<td class="none">—</td>`;const s=STORES[it.store]||STORES.other;const sel=st.calSel&&st.calSel.f===f&&st.calSel.i===i;
+      return`<td class="${i===bi&&cnt>1?"best":""} ${sel?"sel":""}" data-f="${esc(f)}" data-i="${i}">${i===bi&&cnt>1?'<span class="stamp">買い時</span>':""}<span class="p dela num">¥${taxPrice(it)}</span><span class="s"><span class="dot" style="background:${s.c}"></span>${esc(s.name)}</span></td>`}).join("")+`</tr>`}
+  $("#cal").innerHTML=h+"</tbody></table>";
+  if(st.calSel){const d=DAYS[st.calSel.i];const l=items.filter(it=>validOn(it,d)&&matches(it,st.calSel.f)).sort((a,b)=>(taxPrice(a)??9e9)-(taxPrice(b)??9e9));
+    $("#calDetail").innerHTML=`<div class="grouphead"><span>${md(d)}の「${esc(st.calSel.f)}」</span><span>${l.length}品</span></div>`+l.map(i=>dealCard(i,d,items)).join("")}
+  else $("#calDetail").innerHTML=`<p class="note">価格をタップすると、その日の商品一覧が出ます。</p>`;
+}
+function renderFavs(){
+  $("#favList").innerHTML=favs.map(f=>`<span class="favchip">${esc(f)}<button data-del="${esc(f)}" aria-label="${esc(f)}を外す">×</button></span>`).join("");
+  const sugg=Object.entries(bought).filter(([k,v])=>v.length>=2&&!favs.some(f=>variants(f).includes(k))).sort((a,b)=>b[1].length-a[1].length).slice(0,8);
+  $("#suggWrap").innerHTML=sugg.length?`<p class="note">よく買っているもの（タップで追加）</p><div class="favchips">${sugg.map(([k,v])=>`<button class="favchip sugg" data-add="${esc(k)}">＋ ${esc(k)}（${v.length}回）</button>`).join("")}</div>`:"";
+}
+
+/* ---------- 読み取り ---------- */
+let files=[];
+const PROMPT=(store,from,to)=>`スーパー「${store}」のチラシまたはSNS告知の画像です（今日は${TODAY}）。
+価格が書かれた商品をすべて抽出し、JSONのみで出力してください。画像の端で切れて価格が読めない商品は除外。
+形式: {"items":[{"name":"商品名(ブランド・産地含む)","item_key":"比較用の一般名(例:卵,牛乳,豚こま切落し,鶏もも,みかん,食パン)","category":"${CATS.join("|")}","price":本体価格(税抜)の数値かnull,"price_tax":税込価格の数値かnull,"quantity":"内容量・単位(例:10個入1パック,100g当り)","date_from":"YYYY-MM-DD","date_to":"YYYY-MM-DD","condition":"会員限定・お一人様〇点限り・時間限定など、なければnull"}]}
+日付は商品ごとの「〇日限り」「本日限り」等の表記から判断。表記がなければ ${from}〜${to}。年は${from.slice(0,4)}年。`;
+async function toTiles(file){
+  const bmp=await createImageBitmap(file);const W=bmp.width,H=bmp.height;const T=1800,ov=100;
+  const cols=Math.max(1,Math.ceil(W/T)),rows=Math.max(1,Math.ceil(H/(W<=T&&H<=2600?2600:T)));const out=[];
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    const x0=Math.max(0,Math.floor(c*W/cols)-ov),y0=Math.max(0,Math.floor(r*H/rows)-ov),x1=Math.min(W,Math.floor((c+1)*W/cols)+ov),y1=Math.min(H,Math.floor((r+1)*H/rows)+ov);
+    const cv=document.createElement("canvas");cv.width=x1-x0;cv.height=y1-y0;cv.getContext("2d").drawImage(bmp,x0,y0,x1-x0,y1-y0,0,0,x1-x0,y1-y0);
+    out.push(cv.toDataURL("image/jpeg",.88).split(",")[1])}
+  return out}
+async function gemini(b64,prompt){
+  const key=LS.get("apikey","");const model=LS.get("model","")||"gemini-flash-latest";
+  if(!key)throw new Error("設定タブで Gemini API キーを入れてください");
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},
+    body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt},{inline_data:{mime_type:"image/jpeg",data:b64}}]}],generationConfig:{responseMimeType:"application/json",temperature:0}})});
+  if(!r.ok){const t=await r.text();throw new Error(`読み取りに失敗しました（HTTP ${r.status}）。${r.status===400||r.status===403?"API キーかモデル名を確認してください。":r.status===429?"利用上限に達しました。少し待ってから再度お試しください。":""} ${t.slice(0,160)}`)}
+  const j=await r.json();const t=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+  const js=JSON.parse(t.slice(t.indexOf("{"),t.lastIndexOf("}")+1));return js.items||[]}
+let pending=[];
+async function runRead(){
+  const store=$("#upStore").value,from=$("#upFrom").value||TODAY,to=$("#upTo").value||from;
+  const sname=$("#upStore").selectedOptions[0].textContent;
+  $("#readBtn").disabled=true;$("#readResult").innerHTML="";pending=[];
+  try{
+    let tiles=[];for(const f of files)tiles=tiles.concat(await toTiles(f));
+    for(let i=0;i<tiles.length;i++){
+      $("#readStatus").innerHTML=`<div class="progress">読み取り中… ${i+1} / ${tiles.length}</div>`;
+      const got=await gemini(tiles[i],PROMPT(sname,from,to));
+      for(const g of got){const it={store,name:String(g.name||"").trim(),item_key:String(g.item_key||g.name||"").trim(),category:CATS.includes(g.category)?g.category:"その他",
+        price:g.price==null?null:+g.price,price_tax:g.price_tax==null?null:+g.price_tax,quantity:g.quantity||"",
+        date_from:/^\d{4}-\d\d-\d\d$/.test(g.date_from||"")?g.date_from:from,date_to:/^\d{4}-\d\d-\d\d$/.test(g.date_to||"")?g.date_to:to,condition:g.condition||null,src:"upload",at:new Date().toISOString()};
+        if(!it.name)continue;if(pending.some(p=>p.name===it.name&&p.price===it.price&&p.date_from===it.date_from))continue;pending.push(it)}}
+    $("#readStatus").innerHTML="";renderPending();
+  }catch(e){$("#readStatus").innerHTML=`<div class="err">${esc(e.message)}</div>`}
+  finally{$("#readBtn").disabled=!files.length}
+}
+function renderPending(){
+  if(!pending.length){$("#readResult").innerHTML=`<div class="empty"><b>商品が見つかりませんでした</b>文字が大きく写るように撮り直すか、チラシの一部だけを切り取って試してください。</div>`;return}
+  $("#readResult").innerHTML=`<div class="grouphead"><span>読み取り結果（チェックを外すと保存しません）</span><span>${pending.length}品</span></div>`+
+    pending.map((p,i)=>`<div class="res"><input type="checkbox" checked data-pi="${i}" aria-label="保存する"><div><b>${esc(p.name)}</b><small>${esc(p.quantity)}　${p.date_from===p.date_to?md(p.date_from)+"限り":md(p.date_from)+"〜"+md(p.date_to)}${p.condition?"　"+esc(p.condition):""}</small></div><input type="number" inputmode="numeric" value="${taxPrice(p)??""}" data-pp="${i}" aria-label="税込価格"></div>`).join("")+
+    `<div style="margin-top:12px;display:flex;gap:8px"><button class="btn red" id="savePending">保存する</button><button class="btn ghost" id="discardPending">やめる</button></div>`;
+}
+function renderSaved(){
+  const g={};for(const u of uploads){const k=u.store+"|"+u.at.slice(0,10);(g[k]=g[k]||[]).push(u)}
+  const ks=Object.keys(g).sort().reverse();
+  $("#savedList").innerHTML=ks.length?ks.map(k=>{const[s,d]=k.split("|");const live=g[k].filter(i=>i.date_to>=TODAY).length;
+    return`<div class="saved"><span><b>${esc(STORES[s]?.name||s)}</b>　${md(d)}読み取り　${g[k].length}品${live<g[k].length?`（うち期限内${live}品）`:""}</span><button class="act" data-delup="${esc(k)}">削除</button></div>`}).join(""):`<p class="note" style="margin:0">まだありません。</p>`;
+}
+
+/* ---------- 設定 ---------- */
+function renderSet(){
+  $("#apiKey").value=LS.get("apikey","");$("#model").value=LS.get("model","");
+  const fl=AUTO.flyers||[];
+  $("#dataInfo").innerHTML=`<p class="note" style="margin-top:0">自動読み取り：${esc(AUTO.source||"—")}<br>最終更新：${AUTO.generated_at?esc(AUTO.generated_at.replace("T"," ").slice(0,16)):"—"}　チラシ ${fl.length}件・${AUTO.items.length}品</p>`+
+   fl.map(f=>`<div class="saved"><span>${esc(f.name)}</span><small class="meta">${md(f.start)}〜${md(f.end)}</small></div>`).join("");
+}
+
+/* ---------- 描画 ---------- */
+function renderAll(){renderDays();renderCats();renderDeals();renderCal();renderFavs();renderSaved();renderSet();
+  const n=allItems().length;$("#updated").textContent=`ライフ自動更新 ${AUTO.generated_at?AUTO.generated_at.slice(5,16).replace("-","/").replace("T"," "):"—"}　期限内 ${n}品`}
+$("#todayLabel").textContent=md(TODAY);
+
+/* ---------- イベント ---------- */
+document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;
+  document.querySelectorAll("nav.tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  document.querySelectorAll("main>section").forEach(s=>s.hidden=s.id!=="tab-"+b.dataset.tab);window.scrollTo(0,0)});
+$("#days").addEventListener("click",e=>{const b=e.target.closest(".day");if(!b)return;st.day=+b.dataset.i;renderDays();renderCats();renderDeals()});
+$("#cats").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;st.cat=b.dataset.c;renderCats();renderDeals()});
+$("#q").addEventListener("input",e=>{st.q=e.target.value;renderDeals()});
+$("#onlyFav").addEventListener("change",e=>{st.onlyFav=e.target.checked;renderDeals()});
+document.addEventListener("click",e=>{
+  const by=e.target.closest("[data-buy]");if(by){const k=by.dataset.buy;const a=bought[k]=bought[k]||[];const i=a.indexOf(TODAY);if(i>=0)a.splice(i,1);else{a.push(TODAY);toast("買った記録をつけました")}if(!a.length)delete bought[k];LS.set("bought",bought);renderDeals();renderCal();renderFavs();return}
+  const fv=e.target.closest("[data-fav]");if(fv){const k=fv.dataset.fav;const hit=favs.find(f=>matches({item_key:k,name:k},f));if(hit){favs=favs.filter(f=>f!==hit);toast(`「${hit}」を外しました`)}else{favs.push(k);toast(`「${k}」をよく買うものに追加`)}LS.set("favs",favs);renderAll();return}
+  const td=e.target.closest("td[data-f]");if(td){const s={f:td.dataset.f,i:+td.dataset.i};st.calSel=(st.calSel&&st.calSel.f===s.f&&st.calSel.i===s.i)?null:s;renderCal();return}
+  const del=e.target.closest("[data-del]");if(del){favs=favs.filter(f=>f!==del.dataset.del);LS.set("favs",favs);renderAll();return}
+  const add=e.target.closest("[data-add]");if(add){favs.push(add.dataset.add);LS.set("favs",favs);renderAll();return}
+  const du=e.target.closest("[data-delup]");if(du){const[s,d]=du.dataset.delup.split("|");uploads=uploads.filter(u=>!(u.store===s&&u.at.slice(0,10)===d));LS.set("uploads",uploads);renderAll();return}
+  if(e.target.id==="savePending"){
+    document.querySelectorAll("[data-pp]").forEach(inp=>{const p=pending[+inp.dataset.pp];const v=inp.value===""?null:+inp.value;if(v!==taxPrice(p)){p.price_tax=v;p.price=null}});
+    const keep=pending.filter((p,i)=>document.querySelector(`[data-pi="${i}"]`).checked);
+    uploads=uploads.concat(keep);LS.set("uploads",uploads);pending=[];files=[];$("#thumbs").innerHTML="";$("#readBtn").disabled=true;$("#readResult").innerHTML="";
+    toast(`${keep.length}品を保存しました`);renderAll();return}
+  if(e.target.id==="discardPending"){pending=[];$("#readResult").innerHTML="";return}
+});
+$("#favForm").addEventListener("submit",e=>{e.preventDefault();const v=$("#favIn").value.trim();if(!v)return;if(!favs.includes(v))favs.push(v);LS.set("favs",favs);$("#favIn").value="";renderAll()});
+$("#upFrom").value=TODAY;$("#upTo").value=TODAY;
+$("#upFrom").addEventListener("change",e=>{if($("#upTo").value<e.target.value)$("#upTo").value=e.target.value});
+$("#upFile").addEventListener("change",e=>{files=[...e.target.files];$("#thumbs").innerHTML=files.map(f=>`<img alt="" src="${URL.createObjectURL(f)}">`).join("");$("#readBtn").disabled=!files.length;e.target.value=""});
+$("#readBtn").addEventListener("click",runRead);
+$("#saveKey").addEventListener("click",()=>{LS.set("apikey",$("#apiKey").value.trim());LS.set("model",$("#model").value.trim());toast("保存しました")});
+$("#exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify({favs,bought,uploads,v:1},null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`kaimono-${TODAY}.json`;a.click()});
+$("#importFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());
+  favs=[...new Set([...favs,...(d.favs||[])])];for(const[k,v]of Object.entries(d.bought||{}))bought[k]=[...new Set([...(bought[k]||[]),...v])];
+  const sig=u=>u.store+u.name+u.price+u.date_from;const have=new Set(uploads.map(sig));uploads=uploads.concat((d.uploads||[]).filter(u=>!have.has(sig(u))));
+  LS.set("favs",favs);LS.set("bought",bought);LS.set("uploads",uploads);toast("読み込みました");renderAll()}catch{toast("このファイルは読み込めません")}e.target.value=""});
+
+function openTab(t){const b=document.querySelector(`nav.tabs button[data-tab="${t}"]`);if(b)b.click()}
+/* ---------- 起動 ---------- */
+(async()=>{
+  try{const r=await fetch("data/deals.json",{cache:"no-store"});if(!r.ok)throw 0;AUTO=await r.json()}
+  catch{try{AUTO=JSON.parse($("#seed").textContent)}catch{AUTO={flyers:[],items:[]}}}
+  try{const r=await fetch("data/history.json",{cache:"no-store"});if(r.ok)HIST=await r.json()}catch{}
+  // 自分で読み取った分も履歴に足す
+  for(const u of uploads){const p=u.price??u.price_tax;if(p==null)continue;(HIST[u.item_key]=HIST[u.item_key]||[]).push({d:u.date_from,p,q:u.quantity,s:u.store})}
+  uploads=uploads.filter(u=>u.date_to>=addDays(TODAY,-60));LS.set("uploads",uploads);
+  renderAll();
+  if(location.hash.length>1)openTab(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>
