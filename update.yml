@@ -1,0 +1,61 @@
+name: life-flyer
+on:
+  schedule:
+    - cron: "30 21 * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: ファイルを確認
+        run: ls -R
+      - run: pip install pillow
+      - name: チラシを読み取る
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::error::GEMINI_API_KEY が未設定です。Settings → Secrets and variables → Actions で登録してください。"
+            exit 1
+          fi
+          found=$(find . -name "fetch_life*.py" -not -path "./.git/*")
+          echo "見つかったスクリプト:"; echo "$found"
+          n=$(echo "$found" | grep -c . || true)
+          if [ "$n" -gt 1 ]; then
+            echo "::warning::fetch_life.py が $n 個あります。古い方は削除してください。"
+          fi
+          p=$(echo "$found" | head -1)
+          if [ -z "$p" ]; then
+            echo "::error::fetch_life.py が見つかりません。上の一覧を確認してください。"
+            exit 1
+          fi
+          d=$(dirname "$p")
+          test -f "$d/index.html" || echo "::warning::$d に index.html がありません。"
+          echo "アプリの場所: $d"
+          python - "$p" <<'CHECK'
+          import ast, sys
+          src = open(sys.argv[1], encoding="utf-8").read()
+          try:
+              ast.parse(src)
+          except SyntaxError as e:
+              sys.exit(f"ファイルの中身が壊れています（{e.lineno}行目）。貼り付けではなくアップロードで置き換えてください。")
+          missing = [n for n in ("def list_flyers", "def list_models", "def main") if n not in src]
+          if missing:
+              sys.exit("ファイルが途中で切れています（" + ", ".join(missing) + " がありません）。貼り付けではなくアップロードで置き換えてください。")
+          print("スクリプトの確認: OK")
+          CHECK
+          cd "$d" && python fetch_life.py
+      - name: 結果を保存
+        run: |
+          git config user.name "kaimono-bot"
+          git config user.email "kaimono-bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "update"
+          git push
