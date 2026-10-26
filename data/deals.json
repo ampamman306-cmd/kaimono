@@ -1,14 +1,14 @@
 {
- "generated_at": "2026-10-26T06:51:55+09:00",
+ "generated_at": "2026-10-27T06:58:52+09:00",
  "source": "LINEチラシ（ライフ阪神芦屋店）",
  "flyers": [
   {
-   "id": "6ad8f2a6dbaad65a7d0f80bd",
+   "id": "6adc9631f1eae512d719ca1d",
    "store": "life_hanshin_ashiya",
-   "name": "10/24(土)~家計応援ウィーク",
-   "start": "2026-10-24",
-   "end": "2026-10-30",
-   "image": "https://chirashi-obs.line-scdn.net/0hQ_PKK_8YDnBtMhLPkrtxJzVgCRgDUgt_CUoHQhtzThIbAwxaCg0aRT50GCsbYk11JAkIajpZGyEmQw9ZCT9Ady5SDBUlAwB1NysfRUpaGxNCfgJZJCQHbRRoWDww"
+   "name": "10/27(火)売り切れご免ライフの朝市",
+   "start": "2026-10-27",
+   "end": "2026-10-27",
+   "image": "https://chirashi-obs.line-scdn.net/0hueWjLNyEKkpqEzbx8QVVHTJBLSIEcy9FDmsjeBxSaigcIihgCjcsUBB4MygxQ2xJMHQjeS14PxshYitjDh5kTSlzKC8iIiRPMBY4UxNFMgUMQ21jMwUtVxNJfAY3"
   },
   {
    "id": "6ad8f2a6dbaad65a7d0f80bc",
@@ -17,6 +17,14 @@
    "start": "2026-10-24",
    "end": "2026-10-30",
    "image": "https://chirashi-obs.line-scdn.net/0hStSZ0ZGSDFtuIxDkka9zDDBxCzMAQwlUClsFaRhiTDkYEkldOzEKbT5DGTsYcAhyNDoKRhRfWjscY0h2DSVLVjlIUgomZA5lURwEaCJQCBc2dw1mGTUfbS4iFA"
+  },
+  {
+   "id": "6ad8f2a6dbaad65a7d0f80bd",
+   "store": "life_hanshin_ashiya",
+   "name": "10/24(土)~家計応援ウィーク",
+   "start": "2026-10-24",
+   "end": "2026-10-30",
+   "image": "https://chirashi-obs.line-scdn.net/0hQ_PKK_8YDnBtMhLPkrtxJzVgCRgDUgt_CUoHQhtzThIbAwxaCg0aRT50GCsbYk11JAkIajpZGyEmQw9ZCT9Ady5SDBUlAwB1NysfRUpaGxNCfgJZJCQHbRRoWDww"
   },
   {
    "id": "6ac089fe0bcb655f9b5a5482",
@@ -1118,31 +1126,59 @@
   },
   {
    "store": "life_hanshin_ashiya",
-   "flyer_id": "6ad8f2a6dbaad65a7d0f80bc",
-   "name": "土佐しょうが 80g入",
-   "item_key": "しょうが",
-   "category": "その他",
-   "price": 98.0,
-   "price_tax": 105.0,
-   "quantity": "1袋",
-   "date_from": "2026-10-26",
-   "date_to": "2026-10-26",
-   "condition": "null",
-   "id": "bf8ab88644"
+   "flyer_id": "6adc9631f1eae512d719ca1d",
+   "name": "YKベーキング ほんのり甘い食パン (5枚・6枚)",
+   "item_key": "食パン",
+   "category": "パン",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "各1斤",
+   "date_from": "2026-10-27",
+   "date_to": "2026-10-27",
+   "condition": "開店から最大お昼12時まで",
+   "id": "498e46424c"
   },
   {
    "store": "life_hanshin_ashiya",
-   "flyer_id": "6ad8f2a6dbaad65a7d0f80bc",
-   "name": "ハウス特選生わさび・生しょうが 40g",
-   "item_key": "わさび",
+   "flyer_id": "6adc9631f1eae512d719ca1d",
+   "name": "スマイルライフ フィッシュソーセージ",
+   "item_key": "フィッシュソーセージ",
    "category": "加工食品",
-   "price": 40.0,
-   "price_tax": 43.0,
-   "quantity": "1本",
-   "date_from": "2026-10-26",
-   "date_to": "2026-10-26",
-   "condition": "お1人様各1点限り",
-   "id": "cc97bae7a9"
+   "price": 198.0,
+   "price_tax": 213.0,
+   "quantity": "5本束 (65g×5)",
+   "date_from": "2026-10-27",
+   "date_to": "2026-10-27",
+   "condition": "お1人様1点限り・先着30名様・開店から最大お昼12時まで",
+   "id": "70c574e642"
+  },
+  {
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6adc9631f1eae512d719ca1d",
+   "name": "スターセレクト クリームクレンザー",
+   "item_key": "クレンザー",
+   "category": "日用品",
+   "price": 98.0,
+   "price_tax": 107.0,
+   "quantity": "400g",
+   "date_from": "2026-10-27",
+   "date_to": "2026-10-27",
+   "condition": "お1人様2点まで・開店から最大お昼12時まで",
+   "id": "02c10db70c"
+  },
+  {
+   "store": "life_hanshin_ashiya",
+   "flyer_id": "6adc9631f1eae512d719ca1d",
+   "name": "福岡産他 小松菜",
+   "item_key": "小松菜",
+   "category": "野菜",
+   "price": 99.0,
+   "price_tax": 106.0,
+   "quantity": "1袋",
+   "date_from": "2026-10-27",
+   "date_to": "2026-10-27",
+   "condition": "開店から最大お昼12時まで",
+   "id": "fffb443b05"
   },
   {
    "store": "life_hanshin_ashiya",
