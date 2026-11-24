@@ -39,6 +39,82 @@ CAT_MAP = {"精肉": "肉", "精肉加工品": "肉", "鮮魚": "魚", "乳製�
            "ノンアルコール飲料": "飲料", "冷凍食品": "加工食品", "レトルト": "加工食品", "調味料": "加工食品",
            "麺類": "加工食品", "粉類": "加工食品", "漬物": "日配"}
 
+# --- カテゴリと特典（ポイント・割引）の自動補正 ---
+# Gemini の分類・価格付けの典型的な誤りを、決め打ちルールで正す。
+FRUIT_KW = ["キウイ", "みかん", "りんご", "バナナ", "ぶどう", "シャインマスカット", "梨", "桃", "いちご", "苺",
+            "メロン", "すいか", "スイカ", "パイナップル", "パイン", "マンゴー", "レモン", "オレンジ",
+            "グレープフルーツ", "柿", "さくらんぼ", "ブルーベリー", "いちじく", "栗"]
+VEG_KW = ["キャベツ", "玉ねぎ", "玉葱", "じゃがいも", "ジャガイモ", "人参", "にんじん", "大根", "きゅうり",
+          "トマト", "なす", "茄子", "ピーマン", "パプリカ", "レタス", "白菜", "ねぎ", "ネギ", "もやし",
+          "しいたけ", "しめじ", "えのき", "まいたけ", "エリンギ", "さつまいも", "かぼちゃ", "ブロッコリー",
+          "ほうれん草", "小松菜", "にら", "ごぼう", "れんこん", "里芋", "長芋", "生姜", "にんにく",
+          "とうもろこし", "枝豆", "オクラ", "アボカド", "セロリ", "かぶ", "みょうが", "大葉", "しそ",
+          "春菊", "水菜", "アスパラ", "カリフラワー", "ズッキーニ"]
+FISH_KW = ["鮭", "サーモン", "さば", "鯖", "さんま", "あじ", "鯵", "いわし", "ぶり", "まぐろ", "かつお",
+           "たい", "鯛", "えび", "海老", "いか", "たこ", "かに", "ほたて", "帆立", "しらす", "明太子",
+           "たらこ", "刺身", "切身", "干物", "うなぎ", "あなご", "さわら", "いくら", "もずく", "わかめ",
+           "ひじき", "昆布", "海藻", "数の子"]
+MEAT_KW = ["豚", "牛肉", "鶏", "若どり", "若鶏", "地鶏", "合挽", "挽肉", "ひき肉", "ミンチ", "ハム",
+           "ウインナー", "ソーセージ", "ベーコン", "チャーシュー", "ロース", "手羽", "レバー", "ホルモン"]
+
+
+def guess_category(name, key):
+    """「その他」に落ちた商品を、名前のキーワードから本来のカテゴリに戻す。"""
+    s = name + " " + key
+    for kws, cat in ((FRUIT_KW, "果物"), (VEG_KW, "野菜"), (FISH_KW, "魚"), (MEAT_KW, "肉")):
+        if any(k in s for k in kws):
+            return cat
+    return None
+
+
+def fix_category(d):
+    """誤りやすい分類だけを直す（惣菜の主材料や風味の言葉には反応しない）。"""
+    name, key, cat = d["name"], d["item_key"], d["category"]
+    if cat == "その他":
+        g = guess_category(name, key)
+        if g:
+            d["category"] = g
+        return d
+    # 加工肉（ハム・ウインナー等）が日配・加工食品に散らばるのを「肉」に統一（パン類は除く）
+    if cat in ("日配", "加工食品") and re.search(r"ハム|ウインナー|ソーセージ|ベーコン|シャウエッセン|アルトバイエルン", name) \
+            and not re.search(r"パン|トースト|サンド|ロール", name):
+        d["category"] = "肉"
+        return d
+    # 冷凍の惣菜・日配は加工食品（冷凍チャーハン等）。冷凍の魚・肉そのものは元の分類を保つ
+    if cat in ("惣菜", "日配") and ("冷凍" in key or "冷凍" in name):
+        d["category"] = "加工食品"
+        return d
+    if cat == "惣菜" and ("蒲鉾" in key or "かまぼこ" in key):
+        d["category"] = "日配"
+        return d
+    if "コーヒー" in key:
+        d["category"] = "飲料"
+        return d
+    if key in ("切り餅", "餅"):
+        d["category"] = "米"
+        return d
+    return d
+
+
+def fix_offer(d):
+    """ボーナスポイントだけの商品を価格と誤認したケースと、割引率商品の price=0 を直す。"""
+    cond = d.get("condition") or ""
+    m = re.search(r"\+(\d+)ポイント", cond)
+    if m and d["price"] is not None and int(d["price"]) == int(m.group(1)):
+        # 価格表示がなく「+Nポイント」だけの広告。N を価格として読んでしまっている
+        d["price"] = None
+        d["price_tax"] = None
+    if d["price"] == 0:
+        d["price"] = None
+    if d["price_tax"] == 0:
+        d["price_tax"] = None
+    if "クーポン" in d["name"] and d["item_key"] in ("その他", "クーポン"):
+        d["price"] = None
+        d["price_tax"] = None
+        if not d.get("condition"):
+            d["condition"] = "クーポン"
+    return d
+
 
 def log(*a):
     print(*a, flush=True)
@@ -221,7 +297,8 @@ PROMPT = """スーパー「{store}」のチラシ画像です（チラシ名「{
 価格が書かれた商品をすべて抽出し、JSONのみで出力してください。切れて価格が読めない商品は除外。
 {{"items":[{{"name":"商品名(ブランド・産地含む)","item_key":"比較用の一般名(例:卵,牛乳,豚こま切落し,鶏もも,みかん,食パン,ティッシュ,米)","category":"{cats} のいずれか","price":本体価格(税抜)の数値かnull,"price_tax":税込価格の数値かnull,"quantity":"内容量・単位(例:10個入1パック,100g当り)","date_from":"YYYY-MM-DD","date_to":"YYYY-MM-DD","condition":"会員限定・お一人様〇点限り・時間限定など、なければnull"}}]}}
 date_from/date_to は商品ごとの「〇日限り」「〇日〜〇日」の表記から判断し、表記がなければチラシ全体の期間。年は{year}年。
-割引率だけの商品（例:表示価格より2割引）は price と price_tax を null にし、condition に割引内容を入れる。"""
+割引率だけの商品（例:表示価格より2割引）は price と price_tax を null にし、condition に割引内容を入れる。
+ボーナスポイントのみの商品（価格が書かれていないもの）は、ポイント数を価格と間違えないこと。price と price_tax を null にし、condition に「ボーナスポイント+Nポイント」と入れる。価格とボーナスポイントの両方がある商品は、価格を入れ、condition にポイントも併記する。"""
 
 SCHEMA = {"type": "OBJECT", "properties": {"items": {"type": "ARRAY", "items": {"type": "OBJECT", "properties": {
     "name": {"type": "STRING"}, "item_key": {"type": "STRING"}, "category": {"type": "STRING"},
@@ -337,6 +414,8 @@ def normalize(it, flyer):
         d["date_from"] = flyer["start"]
     if not re.match(r"\d{4}-\d\d-\d\d$", d["date_to"]):
         d["date_to"] = flyer["end"]
+    fix_category(d)
+    fix_offer(d)
     key = (d["item_key"], d["name"], d["price"], d["date_from"], d["date_to"], d["flyer_id"])
     d["id"] = hashlib.md5(json.dumps(key, ensure_ascii=False).encode()).hexdigest()[:10]
     return d
@@ -393,6 +472,9 @@ def main():
     log(f"今回読み取るチラシ: {len(targets)}件")
 
     items = [i for i in deals.get("items", []) if i["date_to"] >= t]
+    for i in items:  # 既存データにも補正ルールを適用し直す（分類・ポイント誤読の自己修復）
+        fix_category(i)
+        fix_offer(i)
     done, fail = 0, []
     if targets:
         models = list_models()

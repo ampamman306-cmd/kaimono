@@ -4579,9 +4579,10 @@ function dealCard(it,day,items){
   if(u&&up&&up.v<u*0.95)badges.push(`<span class="b disc">いつもより${Math.round((u-up.v)/u*100)}%安い</span>`);
   if(it.condition)badges.push(`<span class="b cond">${esc(it.condition)}</span>`);
   const period=it.date_from===it.date_to?md(it.date_from)+"限り":`${md(it.date_from)}〜${md(it.date_to)}`;
+  const offer=!it.condition?"特典":it.condition.includes("ポイント")?"ポイント":(it.condition.includes("引")||it.condition.includes("％")||it.condition.includes("%"))?"割引":"特典";
   return `<article class="deal ${fav?"fav":""}" style="--sc:${sto.c}">
     <div class="name">${esc(it.name)}</div>
-    <div class="price">${tp!=null?`<span class="yen dela num">${tp.toLocaleString()}<i>円</i></span>`:`<span class="b cond">割引</span>`}<span class="unit">税込${unitLabel(it)?"・"+unitLabel(it):""}</span></div>
+    <div class="price">${tp!=null?`<span class="yen dela num">${tp.toLocaleString()}<i>円</i></span>`:`<span class="b cond">${offer}</span>`}<span class="unit">税込${unitLabel(it)?"・"+unitLabel(it):""}</span></div>
     <div class="sub"><span>${esc(sto.name)}</span><span>${esc(it.quantity||"")}</span><span>${period}</span></div>
     ${badges.length?`<div class="badges">${badges.join("")}</div>`:""}
     <div class="actions"><button class="act" data-buy="${esc(k)}" aria-pressed="${boughtToday}">${boughtToday?"✓ 買った":"買った"}</button><button class="act star" data-fav="${esc(it.item_key)}" aria-pressed="${fav}">${fav?"★ よく買う":"☆ よく買う"}</button><button class="act" data-addlist="${esc(encodeURIComponent(it.store+"|"+it.date_from+"|"+it.name))}">＋ リスト</button></div>
@@ -4645,7 +4646,9 @@ let files=[];
 const PROMPT=(store,from,to)=>`スーパー「${store}」のチラシまたはSNS告知の画像です（今日は${TODAY}）。
 価格が書かれた商品をすべて抽出し、JSONのみで出力してください。画像の端で切れて価格が読めない商品は除外。
 形式: {"items":[{"name":"商品名(ブランド・産地含む)","item_key":"比較用の一般名(例:卵,牛乳,豚こま切落し,鶏もも,みかん,食パン)","category":"${CATS.join("|")}","price":本体価格(税抜)の数値かnull,"price_tax":税込価格の数値かnull,"quantity":"内容量・単位(例:10個入1パック,100g当り)","date_from":"YYYY-MM-DD","date_to":"YYYY-MM-DD","condition":"会員限定・お一人様〇点限り・時間限定など、なければnull"}]}
-日付は商品ごとの「〇日限り」「本日限り」等の表記から判断。表記がなければ ${from}〜${to}。年は${from.slice(0,4)}年。`;
+日付は商品ごとの「〇日限り」「本日限り」等の表記から判断。表記がなければ ${from}〜${to}。年は${from.slice(0,4)}年。
+割引率だけの商品（例:表示価格より2割引）は price と price_tax を null にし、condition に割引内容を入れる。
+ボーナスポイントのみの商品（価格が書かれていないもの）は、ポイント数を価格と間違えないこと。price と price_tax を null にし、condition に「ボーナスポイント+Nポイント」と入れる。価格とボーナスポイントの両方がある商品は、価格を入れ、condition にポイントも併記する。`;
 async function toTiles(file){
   const bmp=await createImageBitmap(file);const W=bmp.width,H=bmp.height;const T=1800,ov=100;
   const cols=Math.max(1,Math.ceil(W/T)),rows=Math.max(1,Math.ceil(H/(W<=T&&H<=2600?2600:T)));const out=[];
@@ -4728,6 +4731,16 @@ document.addEventListener("click",e=>{
   if(e.target.id==="savePending"){
     document.querySelectorAll("[data-pp]").forEach(inp=>{const p=pending[+inp.dataset.pp];const v=inp.value===""?null:+inp.value;if(v!==taxPrice(p)){p.price_tax=v;p.price=null}});
     const keep=pending.filter((p,i)=>document.querySelector(`[data-pi="${i}"]`).checked);
+    keep.forEach(p=>{ // ポイント誤読・分類ミスの自動補正（サーバー側 fetch_life.py と同じルール）
+      const m=(p.condition||"").match(/\+(\d+)ポイント/);
+      if(m&&p.price!=null&&+p.price===+m[1]){p.price=null;p.price_tax=null}
+      if(p.price===0)p.price=null; if(p.price_tax===0)p.price_tax=null;
+      const s=p.name+" "+p.item_key;
+      if(p.category==="その他"){const FRUIT=["キウイ","みかん","りんご","バナナ","ぶどう","梨","桃","いちご","苺","メロン","すいか","パイナップル","マンゴー","レモン","オレンジ","柿"],VEG=["キャベツ","玉ねぎ","じゃがいも","人参","大根","きゅうり","トマト","なす","ピーマン","レタス","白菜","ねぎ","もやし","かぼちゃ","ブロッコリー","ほうれん草","小松菜","さつまいも"],FISH=["鮭","サーモン","さば","さんま","あじ","いわし","ぶり","まぐろ","えび","いか","たこ","かに","ほたて","しらす","明太子","刺身","うなぎ","もずく","わかめ"],MEAT=["豚","牛肉","鶏","若どり","合挽","挽肉","ミンチ","ハム","ウインナー","ソーセージ","ベーコン"];
+        for(const[kws,cat]of[[FRUIT,"果物"],[VEG,"野菜"],[FISH,"魚"],[MEAT,"肉"]])if(kws.some(k=>s.includes(k))){p.category=cat;break}}
+      else if((p.category==="日配"||p.category==="加工食品")&&/ハム|ウインナー|ソーセージ|ベーコン|シャウエッセン|アルトバイエルン/.test(p.name)&&!/パン|トースト|サンド|ロール/.test(p.name))p.category="肉";
+      else if((p.category==="惣菜"||p.category==="日配")&&s.includes("冷凍"))p.category="加工食品";
+    });
     uploads=uploads.concat(keep);LS.set("uploads",uploads);pending=[];files=[];$("#thumbs").innerHTML="";$("#readBtn").disabled=true;$("#readResult").innerHTML="";
     toast(`${keep.length}品を保存しました`);renderAll();return}
   if(e.target.id==="discardPending"){pending=[];$("#readResult").innerHTML="";return}
