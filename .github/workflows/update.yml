@@ -53,6 +53,7 @@ jobs:
           CHECK
           cd "$d" && python fetch_life.py
       - name: 結果を保存
+        if: always()
         run: |
           git config user.name "kaimono-bot"
           git config user.email "kaimono-bot@users.noreply.github.com"
