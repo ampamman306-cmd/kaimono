@@ -447,6 +447,12 @@ def main():
     save("processed.json", processed)
     save("history.json", history)
     log(f"完了: {len(active)}件のチラシ・{len(items)}品を保存（今回読み取り {done}件 / API {STATE['calls']}回）")
+    # 関西スーパー セルバ店（トクバイ）も続けて取得する。失敗してもライフ分に影響させない。
+    try:
+        import fetch_kansai
+        fetch_kansai.run(sys.modules[__name__])
+    except Exception as e:
+        log(f"関西スーパーの取得で問題が起きました（ライフ分は保存済みです）: {str(e)[:200]}")
     if fail:
         log("次回に持ち越すチラシ: " + " / ".join(fail))
     if STATE["daily"]:

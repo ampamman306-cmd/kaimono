@@ -13,7 +13,7 @@
 :root{
   --paper:#F2F5F4; --card:#FFFFFF; --ink:#18222F; --muted:#6B7785; --line:#DDE3E1;
   --red:#D7261E; --pop:#FFD43B; --wait:#3B5BDB; --ok:#1F8A5B;
-  --life:#F08C00; --pal:#0C8599; --lopia:#C2255C; --other:#868E96;
+  --life:#F08C00; --pal:#0C8599; --lopia:#C2255C; --kansai:#1971C2; --other:#868E96;
   --r:14px; --shadow:0 1px 0 rgba(24,34,47,.06),0 6px 18px -10px rgba(24,34,47,.25);
 }
 *{box-sizing:border-box}
@@ -173,6 +173,7 @@ p.note{font-size:12.5px;color:var(--muted);margin:6px 2px}
       <a class="storelink" style="--sc:var(--pal)" href="https://www.instagram.com/palyamato/" target="_blank" rel="noopener"><span><b>パル・ヤマト 芦屋店</b><br><small>Instagram ストーリーズ → スクショ</small></span><span>開く ›</span></a>
       <a class="storelink" style="--sc:var(--lopia)" href="https://tokubai.co.jp/%E3%83%AD%E3%83%94%E3%82%A2/291670" target="_blank" rel="noopener"><span><b>ロピア 西宮今津店</b><br><small>トクバイのチラシ → スクショ</small></span><span>開く ›</span></a>
       <a class="storelink" style="--sc:var(--life)" href="https://chirashi.line.me/branches/65962d763b54907006de0ad7" target="_blank" rel="noopener"><span><b>ライフ 阪神芦屋店</b><br><small>毎朝自動で読み取り済み</small></span><span>開く ›</span></a>
+      <a class="storelink" style="--sc:var(--kansai)" href="https://tokubai.co.jp/%E9%96%A2%E8%A5%BF%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC/8111" target="_blank" rel="noopener"><span><b>関西スーパー セルバ店</b><br><small>毎朝自動で読み取り済み</small></span><span>開く ›</span></a>
     </div>
     <h2>画像を読み取る</h2>
     <div class="panel">
@@ -181,6 +182,7 @@ p.note{font-size:12.5px;color:var(--muted);margin:6px 2px}
           <option value="palyamato_ashiya">パル・ヤマト 芦屋店</option>
           <option value="lopia_nishinomiya_imazu">ロピア 西宮今津店</option>
           <option value="life_hanshin_ashiya">ライフ 阪神芦屋店</option>
+          <option value="kansai_super_selva">関西スーパー セルバ店</option>
           <option value="other">その他のお店</option>
         </select></div>
       <div class="row2">
@@ -4448,6 +4450,7 @@ const STORES={
   life_hanshin_ashiya:{name:"ライフ",sub:"阪神芦屋",c:"var(--life)"},
   palyamato_ashiya:{name:"パル・ヤマト",sub:"芦屋",c:"var(--pal)"},
   lopia_nishinomiya_imazu:{name:"ロピア",sub:"西宮今津",c:"var(--lopia)"},
+  kansai_super_selva:{name:"関西スーパー",sub:"セルバ",c:"var(--kansai)"},
   other:{name:"その他",sub:"",c:"var(--other)"}
 };
 const CATS=["野菜","果物","肉","魚","惣菜","日配","パン","米","加工食品","菓子","飲料","酒","日用品","その他"];
