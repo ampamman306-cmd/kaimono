@@ -416,7 +416,13 @@ def main():
             if got:
                 processed[f["id"]] = {"name": f["name"], "at": datetime.now(JST).isoformat(), "count": len(got)}
                 done += 1
-            if failed or not got:
+            elif not failed:
+                # 読み取り自体は成功したが商品が0件（クーポン・キャンペーン告知など）。
+                # 以前は失敗扱いで毎朝再試行し続け、最後に exit(1) で Actions を失敗させていた。
+                # 商品なしとして記録し、次回からは対象外にする。
+                processed[f["id"]] = {"name": f["name"], "at": datetime.now(JST).isoformat(), "count": 0, "no_products": True}
+                log(f"  {f['name']}: 商品がなかったため、次回からは読み取り対象外にします")
+            else:
                 fail.append(f["name"])
                 log(f"  {f['name']}: 読み取りが不完全のため、次回に持ち越します")
             if STATE["failed"] >= MAX_FAILED or STATE["calls"] >= MAX_CALLS:
