@@ -130,6 +130,15 @@ p.note{font-size:12.5px;color:var(--muted);margin:6px 2px}
 .storelink{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);border-left:5px solid var(--sc)}
 .storelink small{color:var(--muted)}
 .saved{font-size:13px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.shoprow{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.shoprow:last-child{border-bottom:0}
+.shoprow input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink);flex:none}
+.shopmain{flex:1;min-width:0}
+.shopname{font-size:14.5px}
+.shoprow.done .shopname{text-decoration:line-through;color:var(--muted)}
+.shopmain small{color:var(--muted)}
+.shopdel{border:0;background:#F1F3F5;border-radius:50%;width:26px;height:26px;cursor:pointer;flex:none}
+.tabbdg{background:var(--red);color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;margin-left:5px;font-weight:700}
 .toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:13px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -166,8 +175,19 @@ p.note{font-size:12.5px;color:var(--muted);margin:6px 2px}
     <div id="suggWrap"></div>
   </section>
 
-  <!-- 読み取り -->
-  <section id="tab-read" hidden>
+
+  <!-- 買うものリスト -->
+  <section id="tab-list" hidden>
+    <h2>買うものリスト</h2>
+    <form class="addfav" id="listForm"><input id="listIn" placeholder="手で追加（例：洗剤、電池）" autocomplete="off"><button class="btn">追加</button></form>
+    <div class="panel" id="shopList"></div>
+    <div style="margin-top:10px"><button class="btn ghost" id="clearDone">買えたものを消す</button></div>
+    <p class="note">特売の商品カードにある「＋リスト」からも追加できます。チェックを付けると買えたことになります。</p>
+  </section>
+
+  <!-- 設定 -->
+  <section id="tab-set" hidden>
+    <h2>チラシ読み取り</h2>
     <h2>チラシを開く</h2>
     <div class="storelinks">
       <a class="storelink" style="--sc:var(--pal)" href="https://www.instagram.com/palyamato/" target="_blank" rel="noopener"><span><b>パル・ヤマト 芦屋店</b><br><small>Instagram ストーリーズ → スクショ</small></span><span>開く ›</span></a>
@@ -199,10 +219,6 @@ p.note{font-size:12.5px;color:var(--muted);margin:6px 2px}
     </div>
     <h2>読み取り済み</h2>
     <div class="panel" id="savedList"></div>
-  </section>
-
-  <!-- 設定 -->
-  <section id="tab-set" hidden>
     <h2>AI 読み取りの設定</h2>
     <div class="panel">
       <div class="field"><label for="apiKey">Gemini API キー（この端末だけに保存）</label><input id="apiKey" type="password" placeholder="AQ.…（AIza で始まるキーも可）" autocomplete="off"></div>
@@ -227,7 +243,7 @@ p.note{font-size:12.5px;color:var(--muted);margin:6px 2px}
 <nav class="tabs" role="tablist">
   <button role="tab" data-tab="deals" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>特売</button>
   <button role="tab" data-tab="cal" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h2M14 14h2M8 18h2"/></svg>買い時</button>
-  <button role="tab" data-tab="read" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><circle cx="12" cy="12" r="3.5"/></svg>読み取り</button>
+  <button role="tab" data-tab="list" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.7 8.5a1.5 1.5 0 0 1-1.5 1.2H8.6a1.5 1.5 0 0 1-1.5-1.2L5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg>買うもの<span class="tabbdg" id="listCount" hidden></span></button>
   <button role="tab" data-tab="set" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>設定</button>
 </nav>
 <div class="toast" id="toast"></div>
@@ -4495,7 +4511,9 @@ let AUTO={flyers:[],items:[]},HIST={};
 let favs=LS.get("favs",["卵","牛乳","豚こま","鶏もも","食パン","納豆","バナナ","キャベツ"]);
 let bought=LS.get("bought",{});      // key -> [日付...]
 let uploads=LS.get("uploads",[]);    // 読み取り結果
-let st={day:0,cat:"すべて",q:"",onlyFav:false,calSel:null};
+let st={day:0,q:"",onlyFav:false,calSel:null};
+let selCats=LS.get("cats",[]);   // 選択中のカテゴリ（空＝すべて表示）
+let shop=LS.get("list",[]);      // 買うものリスト
 
 function allItems(){return AUTO.items.concat(uploads).filter(i=>i.date_to>=TODAY&&(taxPrice(i)!=null||i.condition))}
 const validOn=(it,d)=>it.date_from<=d&&d<=it.date_to;
@@ -4535,9 +4553,9 @@ function renderDays(){
 function renderCats(){
   const items=allItems().filter(it=>validOn(it,DAYS[st.day]));
   const have=new Set(items.map(i=>i.category));
-  const list=["すべて",...CATS.filter(c=>have.has(c))];
-  if(!list.includes(st.cat))st.cat="すべて";
-  $("#cats").innerHTML=list.map(c=>`<button class="chip" aria-pressed="${c===st.cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  const list=CATS.filter(c=>have.has(c));
+  selCats=selCats.filter(c=>list.includes(c));
+  $("#cats").innerHTML=`<button class="chip" aria-pressed="${!selCats.length}" data-c="すべて">すべて</button>`+list.map(c=>`<button class="chip" aria-pressed="${selCats.includes(c)}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
 }
 function dealCard(it,day,items){
   const sto=STORES[it.store]||STORES.other;const tp=taxPrice(it);
@@ -4556,17 +4574,17 @@ function dealCard(it,day,items){
     <div class="price">${tp!=null?`<span class="yen dela num">${tp.toLocaleString()}<i>円</i></span>`:`<span class="b cond">割引</span>`}<span class="unit">税込${unitLabel(it)?"・"+unitLabel(it):""}</span></div>
     <div class="sub"><span>${esc(sto.name)}</span><span>${esc(it.quantity||"")}</span><span>${period}</span></div>
     ${badges.length?`<div class="badges">${badges.join("")}</div>`:""}
-    <div class="actions"><button class="act" data-buy="${esc(k)}" aria-pressed="${boughtToday}">${boughtToday?"✓ 買った":"買った"}</button><button class="act star" data-fav="${esc(it.item_key)}" aria-pressed="${fav}">${fav?"★ よく買う":"☆ よく買う"}</button></div>
+    <div class="actions"><button class="act" data-buy="${esc(k)}" aria-pressed="${boughtToday}">${boughtToday?"✓ 買った":"買った"}</button><button class="act star" data-fav="${esc(it.item_key)}" aria-pressed="${fav}">${fav?"★ よく買う":"☆ よく買う"}</button><button class="act" data-addlist="${esc(encodeURIComponent(it.store+"|"+it.date_from+"|"+it.name))}">＋ リスト</button></div>
   </article>`}
 function renderDeals(){
   const day=DAYS[st.day];const items=allItems();const q=norm(st.q);
   let list=items.filter(it=>validOn(it,day));
-  if(st.cat!=="すべて")list=list.filter(i=>i.category===st.cat);
+  if(selCats.length)list=list.filter(i=>selCats.includes(i.category));
   if(q)list=list.filter(i=>searchHit(i,st.q));
   if(st.onlyFav)list=list.filter(isFav);
   const sc=new Map(list.map(i=>[i,score(i,day,items)]));
   list.sort((a,b)=>sc.get(b)-sc.get(a)||(taxPrice(a)??9e9)-(taxPrice(b)??9e9));
-  if(!list.length){$("#dealList").innerHTML=`<div class="empty"><b>この日の特売は見つかりません</b>${st.onlyFav||q||st.cat!=="すべて"?"絞り込みを外すと他の商品が出ます。":"「読み取り」タブからチラシの画像を追加できます。"}</div>`;return}
+  if(!list.length){$("#dealList").innerHTML=`<div class="empty"><b>この日の特売は見つかりません</b>${st.onlyFav||q||selCats.length?"絞り込みを外すと他の商品が出ます。":"設定タブの「チラシ読み取り」からチラシの画像を追加できます。"}</div>`;return}
   const top=list.filter(i=>sc.get(i)>=100&&!laterBetter(i,day,items));
   const wait=list.filter(i=>laterBetter(i,day,items));
   const rest=list.filter(i=>!top.includes(i)&&!wait.includes(i));
@@ -4599,6 +4617,17 @@ function renderFavs(){
   $("#favList").innerHTML=favs.map(f=>`<span class="favchip">${esc(f)}<button data-del="${esc(f)}" aria-label="${esc(f)}を外す">×</button></span>`).join("");
   const sugg=Object.entries(bought).filter(([k,v])=>v.length>=2&&!favs.some(f=>variants(f).includes(k))).sort((a,b)=>b[1].length-a[1].length).slice(0,8);
   $("#suggWrap").innerHTML=sugg.length?`<p class="note">よく買っているもの（タップで追加）</p><div class="favchips">${sugg.map(([k,v])=>`<button class="favchip sugg" data-add="${esc(k)}">＋ ${esc(k)}（${v.length}回）</button>`).join("")}</div>`:"";
+}
+
+/* ---------- 買うものリスト ---------- */
+function renderList(){
+  const open=shop.filter(s=>!s.done).length;
+  const bdg=$("#listCount");bdg.hidden=!open;bdg.textContent=open;
+  if(!shop.length){$("#shopList").innerHTML=`<div class="empty"><b>リストは空です</b>特売の商品カードの「＋リスト」から追加できます。</div>`;return}
+  const rows=[...shop].sort((a,b)=>(a.done-b.done)||(a.date_from||"9999").localeCompare(b.date_from||"9999"));
+  $("#shopList").innerHTML=rows.map(s=>{const idx=shop.indexOf(s);const sto=s.store?(STORES[s.store]||STORES.other):null;
+    const sub=[sto?sto.name:"手入力",s.price_tax!=null?"¥"+s.price_tax.toLocaleString()+(s.quantity?"／"+s.quantity:""):(s.quantity||""),s.date_from?(s.date_from===s.date_to?md(s.date_from)+"限り":md(s.date_from)+"〜"+md(s.date_to)):""].filter(Boolean).join("　");
+    return `<div class="shoprow ${s.done?"done":""}"><input type="checkbox" data-done="${idx}" ${s.done?"checked":""} aria-label="買えた"><div class="shopmain"><div class="shopname">${esc(s.name)}</div><small>${esc(sub)}</small></div><button class="shopdel" data-delist="${idx}" aria-label="削除">×</button></div>`}).join("");
 }
 
 /* ---------- 読み取り ---------- */
@@ -4663,8 +4692,8 @@ function renderSet(){
 }
 
 /* ---------- 描画 ---------- */
-function renderAll(){renderDays();renderCats();renderDeals();renderCal();renderFavs();renderSaved();renderSet();
-  const n=allItems().length;$("#updated").textContent=`ライフ自動更新 ${AUTO.generated_at?AUTO.generated_at.slice(5,16).replace("-","/").replace("T"," "):"—"}　期限内 ${n}品`}
+function renderAll(){renderDays();renderCats();renderDeals();renderCal();renderFavs();renderSaved();renderSet();renderList();
+  const n=allItems().length;$("#updated").textContent=`自動更新 ${AUTO.generated_at?AUTO.generated_at.slice(5,16).replace("-","/").replace("T"," "):"—"}　期限内 ${n}品`}
 $("#todayLabel").textContent=md(TODAY);
 
 /* ---------- イベント ---------- */
@@ -4672,7 +4701,7 @@ document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target
   document.querySelectorAll("nav.tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
   document.querySelectorAll("main>section").forEach(s=>s.hidden=s.id!=="tab-"+b.dataset.tab);window.scrollTo(0,0)});
 $("#days").addEventListener("click",e=>{const b=e.target.closest(".day");if(!b)return;st.day=+b.dataset.i;renderDays();renderCats();renderDeals()});
-$("#cats").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;st.cat=b.dataset.c;renderCats();renderDeals()});
+$("#cats").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const c=b.dataset.c;if(c==="すべて")selCats=[];else{const i=selCats.indexOf(c);if(i>=0)selCats.splice(i,1);else selCats.push(c)}LS.set("cats",selCats);renderCats();renderDeals()});
 $("#q").addEventListener("input",e=>{st.q=e.target.value;renderDeals()});
 $("#onlyFav").addEventListener("change",e=>{st.onlyFav=e.target.checked;renderDeals()});
 document.addEventListener("click",e=>{
@@ -4681,6 +4710,9 @@ document.addEventListener("click",e=>{
   const td=e.target.closest("td[data-f]");if(td){const s={f:td.dataset.f,i:+td.dataset.i};st.calSel=(st.calSel&&st.calSel.f===s.f&&st.calSel.i===s.i)?null:s;renderCal();return}
   const del=e.target.closest("[data-del]");if(del){favs=favs.filter(f=>f!==del.dataset.del);LS.set("favs",favs);renderAll();return}
   const add=e.target.closest("[data-add]");if(add){favs.push(add.dataset.add);LS.set("favs",favs);renderAll();return}
+  const al=e.target.closest("[data-addlist]");if(al){const[st2,df,nm]=decodeURIComponent(al.dataset.addlist).split("|");const it=allItems().find(i=>i.store===st2&&i.date_from===df&&i.name===nm);if(it){if(shop.some(s=>!s.done&&s.name===it.name&&s.store===it.store&&s.date_from===it.date_from))toast("もうリストに入っています");else{shop.push({name:it.name,store:it.store,price_tax:taxPrice(it),quantity:it.quantity||"",date_from:it.date_from,date_to:it.date_to,done:false,at:new Date().toISOString()});LS.set("list",shop);renderList();toast("買うものリストに追加しました")}}return}
+  const dn=e.target.closest("[data-done]");if(dn){const s=shop[+dn.dataset.done];if(s){s.done=dn.checked;LS.set("list",shop);renderList()}return}
+  const dl=e.target.closest("[data-delist]");if(dl){shop.splice(+dl.dataset.delist,1);LS.set("list",shop);renderList();return}
   const du=e.target.closest("[data-delup]");if(du){const[s,d]=du.dataset.delup.split("|");uploads=uploads.filter(u=>!(u.store===s&&u.at.slice(0,10)===d));LS.set("uploads",uploads);renderAll();return}
   if(e.target.id==="savePending"){
     document.querySelectorAll("[data-pp]").forEach(inp=>{const p=pending[+inp.dataset.pp];const v=inp.value===""?null:+inp.value;if(v!==taxPrice(p)){p.price_tax=v;p.price=null}});
@@ -4690,16 +4722,19 @@ document.addEventListener("click",e=>{
   if(e.target.id==="discardPending"){pending=[];$("#readResult").innerHTML="";return}
 });
 $("#favForm").addEventListener("submit",e=>{e.preventDefault();const v=$("#favIn").value.trim();if(!v)return;if(!favs.includes(v))favs.push(v);LS.set("favs",favs);$("#favIn").value="";renderAll()});
+$("#listForm").addEventListener("submit",e=>{e.preventDefault();const v=$("#listIn").value.trim();if(!v)return;shop.push({name:v,store:"",price_tax:null,quantity:"",date_from:"",date_to:"",done:false,at:new Date().toISOString()});LS.set("list",shop);$("#listIn").value="";renderList();toast("追加しました")});
+$("#clearDone").addEventListener("click",()=>{const n=shop.filter(s=>s.done).length;if(!n){toast("買えたものはありません");return}shop=shop.filter(s=>!s.done);LS.set("list",shop);renderList();toast(`${n}件を消しました`)});
 $("#upFrom").value=TODAY;$("#upTo").value=TODAY;
 $("#upFrom").addEventListener("change",e=>{if($("#upTo").value<e.target.value)$("#upTo").value=e.target.value});
 $("#upFile").addEventListener("change",e=>{files=[...e.target.files];$("#thumbs").innerHTML=files.map(f=>`<img alt="" src="${URL.createObjectURL(f)}">`).join("");$("#readBtn").disabled=!files.length;e.target.value=""});
 $("#readBtn").addEventListener("click",runRead);
 $("#saveKey").addEventListener("click",()=>{LS.set("apikey",$("#apiKey").value.trim());LS.set("model",$("#model").value.trim());toast("保存しました")});
-$("#exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify({favs,bought,uploads,v:1},null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`kaimono-${TODAY}.json`;a.click()});
+$("#exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify({favs,bought,uploads,list:shop,v:1},null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`kaimono-${TODAY}.json`;a.click()});
 $("#importFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());
   favs=[...new Set([...favs,...(d.favs||[])])];for(const[k,v]of Object.entries(d.bought||{}))bought[k]=[...new Set([...(bought[k]||[]),...v])];
   const sig=u=>u.store+u.name+u.price+u.date_from;const have=new Set(uploads.map(sig));uploads=uploads.concat((d.uploads||[]).filter(u=>!have.has(sig(u))));
-  LS.set("favs",favs);LS.set("bought",bought);LS.set("uploads",uploads);toast("読み込みました");renderAll()}catch{toast("このファイルは読み込めません")}e.target.value=""});
+  const lsig=s=>s.name+s.store+(s.date_from||"");const lhave=new Set(shop.map(lsig));shop=shop.concat((d.list||[]).filter(s=>!lhave.has(lsig(s))));
+  LS.set("favs",favs);LS.set("bought",bought);LS.set("uploads",uploads);LS.set("list",shop);toast("読み込みました");renderAll()}catch{toast("このファイルは読み込めません")}e.target.value=""});
 
 function openTab(t){const b=document.querySelector(`nav.tabs button[data-tab="${t}"]`);if(b)b.click()}
 /* ---------- 起動 ---------- */
