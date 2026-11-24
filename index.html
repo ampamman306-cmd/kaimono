@@ -4491,7 +4491,7 @@ function variants(kw){const k=norm(kw);const g=SYN.find(a=>a.some(x=>norm(x)===k
 /* よく買うものとの照合は一般名(item_key)で行う（「ランチパック(たまご)」が卵に混ざらないように） */
 function matches(it,kw){const vs=variants(kw);const a=norm(it.item_key);return vs.some(v=>a.includes(v))}
 function searchHit(it,q){const vs=variants(q);const a=norm(it.item_key),b=norm(it.name);return vs.some(v=>a.includes(v)||b.includes(v))}
-function keyOf(it){const k=norm(it.item_key);const g=SYN.find(a=>a.some(x=>k.includes(norm(x))));return g?norm(g[0]):k}
+function keyOf(it){const mt=milkType(it);if(mt)return"牛乳・"+mt;const k=norm(it.item_key);const g=SYN.find(a=>a.some(x=>k.includes(norm(x))));return g?norm(g[0]):k}
 
 /* ---------- 価格 ---------- */
 function taxPrice(it){if(it.price_tax!=null)return Math.round(it.price_tax);if(it.price==null)return null;const r=(it.category==="酒"||it.category==="日用品")?1.10:1.08;return Math.floor(it.price*r)}
@@ -4500,10 +4500,26 @@ function unitOf(q){q=String(q||"").normalize("NFKC");let m;
   if((m=q.match(/(\d+(?:\.\d+)?)\s*kg/i)))return{u:"g",n:m[1]*1000};
   if((m=q.match(/(\d+(?:\.\d+)?)\s*g/)))return{u:"g",n:+m[1]};
   if((m=q.match(/(\d+(?:\.\d+)?)\s*ml/i)))return{u:"ml",n:+m[1]};
+  if((m=q.match(/(\d+(?:\.\d+)?)\s*リットル/)))return{u:"ml",n:m[1]*1000};
   if((m=q.match(/(\d+(?:\.\d+)?)\s*l/i)))return{u:"ml",n:m[1]*1000};
   if((m=q.match(/(\d+)\s*(個|コ|玉|本|枚|ロール|尾|切)/)))return{u:m[2]==="コ"?"個":m[2],n:+m[1]};
   return null}
-function unitPrice(it){const p=taxPrice(it),u=unitOf(it.quantity);if(p==null||!u||!u.n)return null;return{u:u.u,v:p/u.n}}
+/* 牛乳の種類別。「牛乳」だけを買う人のために、種類が違うもの同士は比べない。
+   あじわい牛乳などは牛乳ではなく乳飲料、特濃は加工乳、低脂肪は低脂肪牛乳。 */
+function milkType(it){
+  if(!/牛乳|ミルク/.test(it.name))return null;
+  if(it.category!=="日配"&&!/ml|リットル/.test(String(it.quantity||"")+it.name))return null;
+  const n=it.name;
+  if(/低脂肪/.test(n))return"低脂肪牛乳";
+  if(/あじわい|乳飲料|コーヒー牛乳|フルーツ|いちごミルク|イチゴミルク|カルシウム|鉄分|カフェオレ/.test(n))return"乳飲料";
+  if(/特濃|成分調整|加工乳/.test(n))return"加工乳";
+  if(/牛乳/.test(n))return"牛乳";
+  return null}
+function unitPrice(it){const p=taxPrice(it);if(p==null)return null;const u=unitOf(it.quantity);
+  if(!u||(u.u!=="ml"&&u.u!=="g")){ // 「1本」表記でも商品名に 1000ml 等があれば容量で単価を出す
+    const m=String(it.name||"").normalize("NFKC").match(/(\d+(?:\.\d+)?)\s*(ml|リットル|L)(?![a-zA-Z])/i);
+    if(m){const n=+m[1]*(m[2].toLowerCase()==="ml"?1:1000);if(n>=50)return{u:"ml",v:p/n}}}
+  if(!u||!u.n)return null;return{u:u.u,v:p/u.n}}
 function unitLabel(it){const up=unitPrice(it);if(!up)return"";if(up.u==="g")return`100gあたり¥${Math.round(up.v*100)}`;if(up.u==="ml")return`100mlあたり¥${Math.round(up.v*100)}`;const u=unitOf(it.quantity);return u.n>1?`1${up.u}あたり¥${Math.round(up.v)}`:""}
 /* 比較用の値。単位が合わないものは比べない */
 function cmpVal(a,b){const ua=unitPrice(a),ub=unitPrice(b);if(ua&&ub&&ua.u===ub.u)return[ua.v,ub.v];if(!unitOf(a.quantity)&&!unitOf(b.quantity))return[taxPrice(a),taxPrice(b)];return null}
@@ -4573,6 +4589,7 @@ function dealCard(it,day,items){
   const boughtToday=(bought[k]||[]).includes(TODAY);
   const u=usual(it),up=unitPrice(it);
   const badges=[];
+  const mt=milkType(it);if(mt)badges.push(`<span class="b ${mt==="牛乳"?"best":"cond"}">${mt}</span>`);
   if(lb)badges.push(`<span class="b wait">${md(lb.d)}なら ${esc(STORES[lb.o.store]?.name||"")} ¥${taxPrice(lb.o)}${lb.o.quantity?"／"+esc(lb.o.quantity):""}</span>`);
   else if(it.date_to===day)badges.push(`<span class="b last">${day===TODAY?"今日まで":md(day)+"まで"}</span>`);
   if(!lb&&fav)badges.push(`<span class="b best">3日以内で最安</span>`);
@@ -4613,14 +4630,16 @@ function renderCal(){
   if(!favs.length){$("#cal").innerHTML=`<div class="empty"><b>よく買うものが未登録です</b>下の欄から追加してください。</div>`;$("#calDetail").innerHTML="";return}
   let h=`<table><thead><tr><th class="item"></th>${DAYS.map((d,i)=>{const dt=new Date(d+"T00:00:00");return`<th>${i===0?"今日":WD[dt.getDay()]}<b class="dela">${dt.getDate()}</b></th>`}).join("")}</tr></thead><tbody>`;
   for(const f of favs){
-    const per=DAYS.map(d=>cheapest(items.filter(it=>validOn(it,d)&&matches(it,f))));
+    const fmt=milkType({name:f,item_key:f,category:"日配",quantity:""});
+    const mf=it=>!fmt||milkType(it)===fmt;
+    const per=DAYS.map(d=>cheapest(items.filter(it=>validOn(it,d)&&matches(it,f)&&mf(it))));
     let bi=-1,bv=null;per.forEach((it,i)=>{if(!it)return;const up=unitPrice(it);const v=up?up.v:taxPrice(it);if(bv==null||v<bv-1e-9){bv=v;bi=i}});
     const cnt=per.filter(Boolean).length;
     h+=`<tr><th class="item">${esc(f)}<small>${cnt?cnt+"日分の特売":"特売なし"}</small></th>`+per.map((it,i)=>{
       if(!it)return`<td class="none">—</td>`;const s=STORES[it.store]||STORES.other;const sel=st.calSel&&st.calSel.f===f&&st.calSel.i===i;
       return`<td class="${i===bi&&cnt>1?"best":""} ${sel?"sel":""}" data-f="${esc(f)}" data-i="${i}">${i===bi&&cnt>1?'<span class="stamp">買い時</span>':""}<span class="p dela num">¥${taxPrice(it)}</span><span class="s"><span class="dot" style="background:${s.c}"></span>${esc(s.name)}</span></td>`}).join("")+`</tr>`}
   $("#cal").innerHTML=h+"</tbody></table>";
-  if(st.calSel){const d=DAYS[st.calSel.i];const l=items.filter(it=>validOn(it,d)&&matches(it,st.calSel.f)).sort((a,b)=>(taxPrice(a)??9e9)-(taxPrice(b)??9e9));
+  if(st.calSel){const d=DAYS[st.calSel.i];const fmt2=milkType({name:st.calSel.f,item_key:st.calSel.f,category:"日配",quantity:""});const l=items.filter(it=>validOn(it,d)&&matches(it,st.calSel.f)&&(!fmt2||milkType(it)===fmt2)).sort((a,b)=>(taxPrice(a)??9e9)-(taxPrice(b)??9e9));
     $("#calDetail").innerHTML=`<div class="grouphead"><span>${md(d)}の「${esc(st.calSel.f)}」</span><span>${l.length}品</span></div>`+l.map(i=>dealCard(i,d,items)).join("")}
   else $("#calDetail").innerHTML=`<p class="note">価格をタップすると、その日の商品一覧が出ます。</p>`;
 }
