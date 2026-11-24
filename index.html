@@ -54,6 +54,7 @@ section[hidden]{display:none}
 .toggle input{accent-color:var(--red)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;scrollbar-width:none}
 .chip{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:4px 12px;font-size:13px;cursor:pointer}
+.chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
 .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .grouphead{font-size:12px;color:var(--muted);margin:16px 2px 6px;display:flex;justify-content:space-between}
 
@@ -159,6 +160,7 @@ p.note{font-size:12.5px;color:var(--muted);margin:6px 2px}
       <input class="search" id="q" type="search" placeholder="商品名で探す（例：卵、豚こま）">
       <label class="toggle"><input type="checkbox" id="onlyFav">よく買うもの</label>
     </div>
+    <div class="chips" id="stores"></div>
     <div class="chips" id="cats"></div>
     <div id="dealList"></div>
   </section>
@@ -4513,6 +4515,7 @@ let bought=LS.get("bought",{});      // key -> [日付...]
 let uploads=LS.get("uploads",[]);    // 読み取り結果
 let st={day:0,q:"",onlyFav:false,calSel:null};
 let selCats=LS.get("cats",[]);   // 選択中のカテゴリ（空＝すべて表示）
+let hiddenStores=LS.get("hstores",[]);   // 非表示にしている店
 let shop=LS.get("list",[]);      // 買うものリスト
 
 function allItems(){return AUTO.items.concat(uploads).filter(i=>i.date_to>=TODAY&&(taxPrice(i)!=null||i.condition))}
@@ -4544,14 +4547,21 @@ function score(it,day,items){
   return s}
 
 /* ---------- 特売タブ ---------- */
+const visItems=items=>items.filter(it=>!hiddenStores.includes(it.store));
+function renderStores(){
+  const have=new Set(allItems().map(i=>i.store));
+  const list=Object.keys(STORES).filter(s=>have.has(s));
+  hiddenStores=hiddenStores.filter(s=>list.includes(s));
+  $("#stores").innerHTML=list.map(s=>{const sto=STORES[s];return `<button class="chip" aria-pressed="${!hiddenStores.includes(s)}" data-s="${esc(s)}"><span class="dot" style="background:${sto.c}"></span>${esc(sto.name)}${sto.sub?" "+esc(sto.sub):""}</button>`}).join("");
+}
 function renderDays(){
-  const items=allItems();
+  const items=visItems(allItems());
   $("#days").innerHTML=DAYS.map((d,i)=>{const dt=new Date(d+"T00:00:00");const cls=dt.getDay()===6?"sat":dt.getDay()===0?"sun":"";
     const n=items.filter(it=>validOn(it,d)).length;
     return `<button class="day ${cls}" aria-pressed="${i===st.day}" data-i="${i}"><small>${i===0?"今日":i===1?"明日":i+"日後"}</small><b class="dela">${dt.getDate()}</b><small>${dt.getMonth()+1}月 ${WD[dt.getDay()]}曜</small><span class="cnt">${n}品</span></button>`}).join("");
 }
 function renderCats(){
-  const items=allItems().filter(it=>validOn(it,DAYS[st.day]));
+  const items=visItems(allItems()).filter(it=>validOn(it,DAYS[st.day]));
   const have=new Set(items.map(i=>i.category));
   const list=CATS.filter(c=>have.has(c));
   selCats=selCats.filter(c=>list.includes(c));
@@ -4578,13 +4588,13 @@ function dealCard(it,day,items){
   </article>`}
 function renderDeals(){
   const day=DAYS[st.day];const items=allItems();const q=norm(st.q);
-  let list=items.filter(it=>validOn(it,day));
+  let list=visItems(items).filter(it=>validOn(it,day));
   if(selCats.length)list=list.filter(i=>selCats.includes(i.category));
   if(q)list=list.filter(i=>searchHit(i,st.q));
   if(st.onlyFav)list=list.filter(isFav);
   const sc=new Map(list.map(i=>[i,score(i,day,items)]));
   list.sort((a,b)=>sc.get(b)-sc.get(a)||(taxPrice(a)??9e9)-(taxPrice(b)??9e9));
-  if(!list.length){$("#dealList").innerHTML=`<div class="empty"><b>この日の特売は見つかりません</b>${st.onlyFav||q||selCats.length?"絞り込みを外すと他の商品が出ます。":"設定タブの「チラシ読み取り」からチラシの画像を追加できます。"}</div>`;return}
+  if(!list.length){$("#dealList").innerHTML=`<div class="empty"><b>この日の特売は見つかりません</b>${st.onlyFav||q||selCats.length||hiddenStores.length?"絞り込みを外すと他の商品が出ます。":"設定タブの「チラシ読み取り」からチラシの画像を追加できます。"}</div>`;return}
   const top=list.filter(i=>sc.get(i)>=100&&!laterBetter(i,day,items));
   const wait=list.filter(i=>laterBetter(i,day,items));
   const rest=list.filter(i=>!top.includes(i)&&!wait.includes(i));
@@ -4692,7 +4702,7 @@ function renderSet(){
 }
 
 /* ---------- 描画 ---------- */
-function renderAll(){renderDays();renderCats();renderDeals();renderCal();renderFavs();renderSaved();renderSet();renderList();
+function renderAll(){renderStores();renderDays();renderCats();renderDeals();renderCal();renderFavs();renderSaved();renderSet();renderList();
   const n=allItems().length;$("#updated").textContent=`自動更新 ${AUTO.generated_at?AUTO.generated_at.slice(5,16).replace("-","/").replace("T"," "):"—"}　期限内 ${n}品`}
 $("#todayLabel").textContent=md(TODAY);
 
@@ -4702,6 +4712,7 @@ document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target
   document.querySelectorAll("main>section").forEach(s=>s.hidden=s.id!=="tab-"+b.dataset.tab);window.scrollTo(0,0)});
 $("#days").addEventListener("click",e=>{const b=e.target.closest(".day");if(!b)return;st.day=+b.dataset.i;renderDays();renderCats();renderDeals()});
 $("#cats").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const c=b.dataset.c;if(c==="すべて")selCats=[];else{const i=selCats.indexOf(c);if(i>=0)selCats.splice(i,1);else selCats.push(c)}LS.set("cats",selCats);renderCats();renderDeals()});
+$("#stores").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const s=b.dataset.s;const i=hiddenStores.indexOf(s);if(i>=0)hiddenStores.splice(i,1);else hiddenStores.push(s);LS.set("hstores",hiddenStores);renderStores();renderDays();renderCats();renderDeals()});
 $("#q").addEventListener("input",e=>{st.q=e.target.value;renderDeals()});
 $("#onlyFav").addEventListener("change",e=>{st.onlyFav=e.target.checked;renderDeals()});
 document.addEventListener("click",e=>{
